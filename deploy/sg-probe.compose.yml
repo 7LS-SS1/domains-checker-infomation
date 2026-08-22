@@ -1,0 +1,33 @@
+name: domain-monitor-sg-probe
+
+services:
+  probe:
+    image: ${DOMAIN_MONITOR_IMAGE:?Set DOMAIN_MONITOR_IMAGE to the released Phase 4 image}
+    command: ["/usr/local/bin/probe"]
+    environment:
+      PROBE_API_URL: ${PROBE_API_URL:?Set the public HTTPS platform API URL}
+      PROBE_NAME: ${PROBE_NAME:-sg-primary}
+      PROBE_REGION_CODE: SG
+      PROBE_COUNTRY_CODE: SG
+      PROBE_NETWORK_NAME: ${PROBE_NETWORK_NAME:-sg-egress}
+      PROBE_AGENT_VERSION: ${PROBE_AGENT_VERSION:-phase4}
+      PROBE_STATE_DIR: /var/lib/domain-monitor-probe
+      PROBE_REGISTRATION_TOKEN_FILE: /run/secrets/probe_registration_token
+    secrets:
+      - probe_registration_token
+    volumes:
+      - probe_identity:/var/lib/domain-monitor-probe
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+
+secrets:
+  probe_registration_token:
+    file: ${PROBE_REGISTRATION_TOKEN_FILE:?Set PROBE_REGISTRATION_TOKEN_FILE to a one-time token file}
+
+volumes:
+  probe_identity:

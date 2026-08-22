@@ -1,0 +1,596 @@
+openapi: 3.1.0
+info:
+  title: Domain Monitoring & Asset Intelligence API
+  version: 0.6.0-phase6
+  description: Bilingual Thai/English domain monitoring, Drive/Excel imports, rule-based recommendations and reporting API.
+servers:
+  - url: /api/v1
+paths:
+  /meta/locales:
+    get:
+      summary: List supported locales
+      responses:
+        "200":
+          description: Supported Thai and English locales
+  /auth/login:
+    post:
+      summary: Create an authenticated session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: {type: string, format: email}
+                password: {type: string, format: password}
+      responses:
+        "200": {description: Session created}
+        "401": {$ref: "#/components/responses/Error"}
+  /auth/me:
+    get:
+      summary: Read the current authenticated user
+      security: [{sessionCookie: []}]
+      responses:
+        "200": {description: Current user}
+        "401": {$ref: "#/components/responses/Error"}
+  /auth/logout:
+    post:
+      summary: Revoke the current session
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+      responses:
+        "200": {description: Session revoked}
+  /domains:
+    get:
+      summary: List domains
+      security: [{sessionCookie: []}]
+      parameters:
+        - {name: query, in: query, schema: {type: string}}
+        - {name: lifecycle_status, in: query, schema: {type: string, enum: [active, inactive, archived]}}
+        - {name: source_status, in: query, schema: {type: string, enum: [present, missing_from_source, unknown]}}
+        - {name: page, in: query, schema: {type: integer, minimum: 1, default: 1}}
+        - {name: page_size, in: query, schema: {type: integer, minimum: 1, maximum: 200, default: 50}}
+      responses:
+        "200": {description: Paginated domain list}
+    post:
+      summary: Create a domain
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/CreateDomain"}
+      responses:
+        "201": {description: Domain created}
+        "409": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+  /domains/{domain_id}:
+    parameters:
+      - {$ref: "#/components/parameters/DomainID"}
+    get:
+      summary: Get a domain
+      security: [{sessionCookie: []}]
+      responses:
+        "200": {description: Domain detail}
+        "404": {$ref: "#/components/responses/Error"}
+    patch:
+      summary: Patch a domain with optimistic concurrency
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/PatchDomain"}
+      responses:
+        "200": {description: Updated domain}
+        "409": {$ref: "#/components/responses/Error"}
+  /domains/{domain_id}/archive:
+    post:
+      summary: Archive a domain without deleting evidence
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/LifecycleChange"}
+      responses:
+        "200": {description: Domain archived}
+  /domains/{domain_id}/restore:
+    post:
+      summary: Restore an archived domain
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/LifecycleChange"}
+      responses:
+        "200": {description: Domain restored}
+  /domains/{domain_id}/rdap:
+    get:
+      summary: Read the latest normalized RDAP observation
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/DomainID"}]
+      responses:
+        "200": {description: Latest RDAP result with provenance conflicts}
+        "404": {$ref: "#/components/responses/Error"}
+  /domains/{domain_id}/rdap-check:
+    post:
+      summary: Fetch authoritative RDAP data through the IANA bootstrap registry
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                force: {type: boolean, default: false}
+      responses:
+        "200": {description: RDAP result persisted}
+        "503": {$ref: "#/components/responses/Error"}
+  /domains/{domain_id}/costs:
+    get:
+      summary: List exact-decimal domain cost history and calculations
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/DomainID"}]
+      responses:
+        "200": {description: Domain cost history}
+    post:
+      summary: Add an audited manual domain cost
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/DomainCostInput"}
+      responses:
+        "201": {description: Domain cost created}
+        "422": {$ref: "#/components/responses/Error"}
+  /domains/{domain_id}/overrides:
+    get:
+      summary: List audited manual override history
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/DomainID"}]
+      responses:
+        "200": {description: Override history}
+    post:
+      summary: Create an effective manual override
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ManualOverrideInput"}
+      responses:
+        "201": {description: Override created}
+        "422": {$ref: "#/components/responses/Error"}
+  /domains/{domain_id}/overrides/{override_id}:
+    delete:
+      summary: Revoke a manual override without deleting history
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/OverrideID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Reason"}
+      responses:
+        "200": {description: Override revoked}
+  /domains/{domain_id}/provenance:
+    get:
+      summary: List field provenance observations
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/DomainID"}]
+      responses:
+        "200": {description: Provenance history}
+  /finance/summary:
+    get:
+      summary: Calculate acquisition, renewal, tax and annual budget completeness
+      security: [{sessionCookie: []}]
+      parameters:
+        - name: reporting_currency
+          in: query
+          schema: {type: string, minLength: 3, maxLength: 3, default: THB}
+      responses:
+        "200": {description: Exact-decimal budget summary with 30/60/90-day and yearly windows}
+  /finance/exchange-rates:
+    post:
+      summary: Add an audited report-time exchange rate
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/CSRFToken"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/ExchangeRateInput"}
+      responses:
+        "201": {description: Exchange rate created}
+  /google-sheets/config:
+    get:
+      summary: Read non-secret Google Sheet sync configuration
+      security: [{sessionCookie: []}]
+      responses:
+        "200": {description: Sheet configuration}
+        "404": {$ref: "#/components/responses/Error"}
+    put:
+      summary: Create or update semantic column mapping and schedule
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/CSRFToken"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/GoogleSheetConfigInput"}
+      responses:
+        "200": {description: Sheet configuration saved}
+        "409": {$ref: "#/components/responses/Error"}
+  /google-sheets/previews:
+    post:
+      summary: Fetch, validate and persist an idempotent Sheet preview
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      responses:
+        "201": {description: Preview with ADD/MODIFY/UNCHANGED/MISSING/INVALID rows}
+        "503": {$ref: "#/components/responses/Error"}
+  /google-sheets/excel/previews:
+    post:
+      summary: Upload a bounded .xlsx workbook and persist an import preview
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: {type: string, format: binary}
+                source_name: {type: string}
+                sheet_name: {type: string}
+                column_mapping: {type: string, description: JSON object mapping semantic names to workbook headers}
+      responses:
+        "201": {description: Preview with source_kind excel}
+        "413": {$ref: "#/components/responses/Error"}
+        "422": {$ref: "#/components/responses/Error"}
+  /google-sheets/imports:
+    get:
+      summary: List Google Sheet import history
+      security: [{sessionCookie: []}]
+      responses:
+        "200": {description: Import history}
+  /google-sheets/imports/{import_id}:
+    get:
+      summary: Read a preview/import and its staged rows
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/ImportID"}]
+      responses:
+        "200": {description: Import detail}
+        "404": {$ref: "#/components/responses/Error"}
+  /google-sheets/imports/{import_id}/apply:
+    post:
+      summary: Atomically apply valid staged rows and exclude invalid rows
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/ImportID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Reason"}
+      responses:
+        "200": {description: Import applied}
+        "409": {$ref: "#/components/responses/Error"}
+  /google-sheets/imports/{import_id}/reject:
+    post:
+      summary: Reject a staged preview without changing inventory
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/ImportID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Reason"}
+      responses:
+        "200": {description: Import rejected}
+  /google-drive/connect:
+    post:
+      summary: Start OAuth with state and PKCE and return the Google authorization URL
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/CSRFToken"}]
+      responses:
+        "201": {description: Authorization URL created}
+        "503": {$ref: "#/components/responses/Error"}
+  /google-drive/callback:
+    get:
+      summary: Complete Google OAuth and store encrypted access and refresh tokens
+      security: [{sessionCookie: []}]
+      parameters:
+        - {name: state, in: query, required: true, schema: {type: string}}
+        - {name: code, in: query, required: true, schema: {type: string}}
+      responses:
+        "200": {description: Drive connection completed}
+        "422": {$ref: "#/components/responses/Error"}
+  /google-drive/connection:
+    get:
+      summary: Read non-secret Drive connection metadata
+      security: [{sessionCookie: []}]
+      responses:
+        "200": {description: Connection metadata}
+    delete:
+      summary: Revoke the local Drive connection and erase encrypted tokens
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/CSRFToken"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: "#/components/schemas/Reason"}
+      responses:
+        "204": {description: Connection revoked}
+  /google-drive/files:
+    get:
+      summary: List bounded Google Sheets visible through the connected account
+      security: [{sessionCookie: []}]
+      parameters:
+        - {name: page_token, in: query, schema: {type: string, maxLength: 2048}}
+      responses:
+        "200": {description: Drive file page}
+  /domains/{domain_id}/recommendation:
+    get:
+      summary: Read the latest generated and effective recommendation
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/DomainID"}]
+      responses:
+        "200": {description: Explainable recommendation, including any manual override}
+    post:
+      summary: Generate a rule-based recommendation for one domain
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/DomainID"}
+        - {$ref: "#/components/parameters/CSRFToken"}
+      responses:
+        "201": {description: Immutable recommendation generated}
+  /recommendations:
+    get:
+      summary: List bounded recommendation history
+      security: [{sessionCookie: []}]
+      parameters:
+        - {name: action, in: query, schema: {type: string, enum: [RENEW, DROP, REVIEW, PROFIT_OPPORTUNITY]}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 500}}
+      responses:
+        "200": {description: Recommendation history}
+  /recommendations/run:
+    post:
+      summary: Generate recommendations with one bounded set-based input query
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/CSRFToken"}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit: {type: integer, minimum: 1, maximum: 1000, default: 500}
+      responses:
+        "201": {description: Recommendations generated}
+  /reports/summary:
+    get:
+      summary: Read the Phase 6 operational, recommendation and budget summary
+      security: [{sessionCookie: []}]
+      parameters:
+        - {name: reporting_currency, in: query, schema: {type: string, minLength: 3, maxLength: 3, default: THB}}
+      responses:
+        "200": {description: Summary metrics with exact decimal budget strings}
+  /reports:
+    post:
+      summary: Persist a bounded summary report as JSON or CSV
+      security: [{sessionCookie: []}]
+      parameters:
+        - {$ref: "#/components/parameters/CSRFToken"}
+        - {$ref: "#/components/parameters/IdempotencyKey"}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format]
+              properties:
+                format: {type: string, enum: [json, csv]}
+                reporting_currency: {type: string, default: THB}
+      responses:
+        "201": {description: Completed report metadata}
+  /reports/{report_id}:
+    get:
+      summary: Read report metadata
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/ReportID"}]
+      responses:
+        "200": {description: Report metadata}
+  /reports/{report_id}/download:
+    get:
+      summary: Download the immutable JSON or CSV report payload
+      security: [{sessionCookie: []}]
+      parameters: [{$ref: "#/components/parameters/ReportID"}]
+      responses:
+        "200": {description: Report file with X-Content-SHA256}
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: domainintel_session
+  parameters:
+    DomainID:
+      name: domain_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    CSRFToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      schema: {type: string}
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 8, maxLength: 200}
+    ImportID:
+      name: import_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    OverrideID:
+      name: override_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    ReportID:
+      name: report_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+  schemas:
+    CreateDomain:
+      type: object
+      required: [domain]
+      properties:
+        domain: {type: string, examples: [example.com]}
+        registrar_id: {type: [string, "null"], format: uuid}
+        business_priority: {type: string, enum: [low, medium, high, critical], default: medium}
+        monitoring_enabled: {type: boolean, default: true}
+        expected_content_mode: {type: string, enum: [HTML, ANY, STATUS_ONLY], default: HTML}
+        expiration_at: {type: [string, "null"], description: RFC3339 or YYYY-MM-DD}
+        notes: {type: string}
+    PatchDomain:
+      type: object
+      required: [version]
+      properties:
+        version: {type: integer, minimum: 1}
+        domain: {type: string}
+        registrar_id: {type: string, format: uuid}
+        clear_registrar: {type: boolean}
+        business_priority: {type: string, enum: [low, medium, high, critical]}
+        monitoring_enabled: {type: boolean}
+        expected_content_mode: {type: string, enum: [HTML, ANY, STATUS_ONLY]}
+        expiration_at: {type: string}
+        clear_expiration: {type: boolean}
+        notes: {type: string}
+        reason: {type: string}
+    LifecycleChange:
+      type: object
+      required: [version, reason]
+      properties:
+        version: {type: integer, minimum: 1}
+        reason: {type: string, minLength: 1}
+    Reason:
+      type: object
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1}
+    DomainCostInput:
+      type: object
+      required: [cost_type, amount, currency, tax_mode, reason]
+      properties:
+        cost_type: {type: string, enum: [purchase, renewal]}
+        amount: {type: string, pattern: '^[0-9]+(?:\.[0-9]{1,6})?$'}
+        currency: {type: string, minLength: 3, maxLength: 3, examples: [THB, USD]}
+        tax_rate: {type: [string, "null"], description: Decimal fraction from 0 to 1}
+        tax_mode: {type: string, enum: [exclusive, inclusive, exempt, unknown]}
+        billing_cycle_months: {type: integer, minimum: 1, maximum: 120, default: 12}
+        effective_from: {type: string, format: date}
+        source_reference: {type: string}
+        reason: {type: string, minLength: 1}
+    ManualOverrideInput:
+      type: object
+      required: [field_name, override_value, reason]
+      properties:
+        field_name: {type: string, enum: [recommendation, renewal_price, tax_rate, expiration_date, business_priority]}
+        override_value: {type: string, description: Field-specific string; decimal money/rates remain strings}
+        reason: {type: string, minLength: 1}
+        expires_at: {type: [string, "null"], format: date-time}
+    ExchangeRateInput:
+      type: object
+      required: [base_currency, quote_currency, rate, source, observed_at, reason]
+      properties:
+        base_currency: {type: string, minLength: 3, maxLength: 3}
+        quote_currency: {type: string, minLength: 3, maxLength: 3}
+        rate: {type: string, description: Positive decimal string with up to 10 decimal places}
+        source: {type: string}
+        observed_at: {type: string, format: date-time}
+        reason: {type: string, minLength: 1}
+    GoogleSheetConfigInput:
+      type: object
+      required: [spreadsheet_id, sheet_name, enabled, sync_interval_minutes, version]
+      properties:
+        connection_id: {type: [string, "null"], format: uuid, description: Optional encrypted Google Drive OAuth connection}
+        spreadsheet_id: {type: string}
+        sheet_name: {type: string}
+        range: {type: string, default: "A:Z"}
+        column_mapping:
+          type: object
+          additionalProperties: {type: string}
+        enabled: {type: boolean}
+        sync_interval_minutes: {type: integer, minimum: 5, maximum: 10080}
+        version: {type: integer, minimum: 0}
+        reason: {type: string}
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          required: [code, message, messages, locale, request_id]
+          properties:
+            code: {type: string}
+            message: {type: string}
+            messages:
+              type: object
+              required: [th, en]
+              properties:
+                th: {type: string}
+                en: {type: string}
+            locale: {type: string, enum: [th, en]}
+            request_id: {type: string, format: uuid}
+            details: {type: object, additionalProperties: true}
+  responses:
+    Error:
+      description: Bilingual error response
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/Error"}

@@ -1,0 +1,52 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_USER: domainmonitor
+          POSTGRES_PASSWORD: integration-test-only
+          POSTGRES_DB: domainmonitor_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U domainmonitor -d domainmonitor_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+      redis:
+        image: redis:8.10.0-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgres://domainmonitor:integration-test-only@localhost:5432/domainmonitor_test?sslmode=disable
+      REDIS_ADDR: localhost:6379
+      DEFAULT_LOCALE: th
+      SESSION_COOKIE_SECURE: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.6
+          cache: true
+      - run: test -z "$(gofmt -l .)"
+      - run: go vet ./...
+      - run: go test -race -coverprofile=coverage.out ./...
+      - run: go run ./cmd/migrate -dir migrations up
+      - run: go test -race -tags=integration ./tests/integration/...

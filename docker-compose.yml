@@ -1,0 +1,204 @@
+name: domain-monitor
+
+x-app-environment: &app-environment
+  APP_ENV: development
+  HTTP_ADDR: :8080
+  DATABASE_URL: postgres://${POSTGRES_USER:-domainmonitor}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-domainmonitor}?sslmode=disable
+  REDIS_ADDR: redis:6379
+  REDIS_DB: 0
+  DEFAULT_LOCALE: ${DEFAULT_LOCALE:-th}
+  SESSION_COOKIE_SECURE: "false"
+  DB_MAX_CONNECTIONS: ${DB_MAX_CONNECTIONS:-20}
+  DB_MIN_CONNECTIONS: ${DB_MIN_CONNECTIONS:-2}
+  OUTBOX_STREAM: domain-monitor:jobs
+  LOCAL_DNS_ADDR: "${LOCAL_DNS_ADDR:-}"
+  CLOUDFLARE_DOH_ENDPOINT: ${CLOUDFLARE_DOH_ENDPOINT:-https://cloudflare-dns.com/dns-query}
+  DOH_MAX_RESPONSE_BYTES: ${DOH_MAX_RESPONSE_BYTES:-65536}
+  MONITOR_DNS_TIMEOUT: ${MONITOR_DNS_TIMEOUT:-3s}
+  MONITOR_CONNECT_TIMEOUT: ${MONITOR_CONNECT_TIMEOUT:-5s}
+  MONITOR_TLS_TIMEOUT: ${MONITOR_TLS_TIMEOUT:-7s}
+  MONITOR_RESPONSE_HEADER_TIMEOUT: ${MONITOR_RESPONSE_HEADER_TIMEOUT:-10s}
+  MONITOR_HTTP_CHAIN_TIMEOUT: ${MONITOR_HTTP_CHAIN_TIMEOUT:-25s}
+  MONITOR_MAX_REDIRECTS: ${MONITOR_MAX_REDIRECTS:-10}
+  MONITOR_MAX_BODY_BYTES: ${MONITOR_MAX_BODY_BYTES:-2097152}
+  MONITOR_EXCERPT_BYTES: ${MONITOR_EXCERPT_BYTES:-32768}
+  MONITOR_HEADER_BYTES: ${MONITOR_HEADER_BYTES:-16384}
+  MONITOR_MIN_BODY_BYTES: ${MONITOR_MIN_BODY_BYTES:-64}
+  MONITOR_MAX_ATTEMPTS: ${MONITOR_MAX_ATTEMPTS:-3}
+  MONITOR_RETRY_BASE_DELAY: ${MONITOR_RETRY_BASE_DELAY:-100ms}
+  MONITOR_RETRY_MAX_DELAY: ${MONITOR_RETRY_MAX_DELAY:-2s}
+  MONITOR_TLS_EXPIRING_SOON: ${MONITOR_TLS_EXPIRING_SOON:-720h}
+  MONITOR_USER_AGENT: ${MONITOR_USER_AGENT:-DomainMonitor/phase5}
+  MONITOR_POLICY_VERSION: ${MONITOR_POLICY_VERSION:-monitor-2026-08-v2}
+  MONITOR_RUN_TIMEOUT: ${MONITOR_RUN_TIMEOUT:-60s}
+  MONITOR_WORKERS: ${MONITOR_WORKERS:-10}
+  MONITOR_QUEUE_GROUP: ${MONITOR_QUEUE_GROUP:-domain-monitor-workers}
+  MONITOR_QUEUE_LEASE: ${MONITOR_QUEUE_LEASE:-90s}
+  MONITOR_QUEUE_BLOCK: ${MONITOR_QUEUE_BLOCK:-2s}
+  SCHEDULER_INTERVAL: ${SCHEDULER_INTERVAL:-5s}
+  SCHEDULER_BATCH_SIZE: ${SCHEDULER_BATCH_SIZE:-100}
+  INCIDENT_OPEN_FAILURES: ${INCIDENT_OPEN_FAILURES:-3}
+  INCIDENT_CLOSE_SUCCESSES: ${INCIDENT_CLOSE_SUCCESSES:-2}
+  PROBE_REQUIRED_REGION: ${PROBE_REQUIRED_REGION:-SG}
+  PROBE_TOKEN_TTL: ${PROBE_TOKEN_TTL:-5m}
+  PROBE_CHALLENGE_TTL: ${PROBE_CHALLENGE_TTL:-1m}
+  PROBE_JOB_TTL: ${PROBE_JOB_TTL:-2m}
+  PROBE_JOB_LEASE: ${PROBE_JOB_LEASE:-90s}
+  PROBE_STALE_AFTER: ${PROBE_STALE_AFTER:-90s}
+  PROBE_MAX_CLOCK_SKEW: ${PROBE_MAX_CLOCK_SKEW:-2m}
+  PROBE_EVIDENCE_FRESHNESS: ${PROBE_EVIDENCE_FRESHNESS:-24h}
+  PROBE_DISPATCH_BATCH: ${PROBE_DISPATCH_BATCH:-100}
+  PROBE_MAX_PAYLOAD_BYTES: ${PROBE_MAX_PAYLOAD_BYTES:-1048576}
+  RDAP_BOOTSTRAP_URL: ${RDAP_BOOTSTRAP_URL:-https://data.iana.org/rdap/dns.json}
+  RDAP_MAX_RESPONSE_BYTES: ${RDAP_MAX_RESPONSE_BYTES:-1048576}
+  RDAP_REQUEST_TIMEOUT: ${RDAP_REQUEST_TIMEOUT:-15s}
+  RDAP_BOOTSTRAP_TTL: ${RDAP_BOOTSTRAP_TTL:-24h}
+  RDAP_BOOTSTRAP_MAX_STALE: ${RDAP_BOOTSTRAP_MAX_STALE:-168h}
+  RDAP_DOMAIN_CACHE_TTL: ${RDAP_DOMAIN_CACHE_TTL:-6h}
+  RDAP_MIN_REQUEST_INTERVAL: ${RDAP_MIN_REQUEST_INTERVAL:-200ms}
+  FINANCE_FX_MAX_AGE: ${FINANCE_FX_MAX_AGE:-48h}
+  GOOGLE_SHEETS_API_BASE: ${GOOGLE_SHEETS_API_BASE:-https://sheets.googleapis.com}
+  GOOGLE_SHEETS_API_KEY: ${GOOGLE_SHEETS_API_KEY:-}
+  GOOGLE_SHEETS_ACCESS_TOKEN: ${GOOGLE_SHEETS_ACCESS_TOKEN:-}
+  GOOGLE_SERVICE_ACCOUNT_CREDENTIALS_FILE: ${GOOGLE_SERVICE_ACCOUNT_CREDENTIALS_FILE:-}
+  GOOGLE_SHEETS_MAX_RESPONSE_BYTES: ${GOOGLE_SHEETS_MAX_RESPONSE_BYTES:-4194304}
+  GOOGLE_SHEETS_TIMEOUT: ${GOOGLE_SHEETS_TIMEOUT:-20s}
+  GOOGLE_DRIVE_API_BASE: ${GOOGLE_DRIVE_API_BASE:-https://www.googleapis.com/drive}
+  GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+  GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:-}
+  GOOGLE_OAUTH_REDIRECT_URL: ${GOOGLE_OAUTH_REDIRECT_URL:-}
+  GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY: ${GOOGLE_OAUTH_TOKEN_ENCRYPTION_KEY:-}
+  GOOGLE_OAUTH_SCOPES: ${GOOGLE_OAUTH_SCOPES:-openid email https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets.readonly}
+  EXCEL_IMPORT_MAX_BYTES: ${EXCEL_IMPORT_MAX_BYTES:-10485760}
+  EXCEL_IMPORT_MAX_UNCOMPRESSED_BYTES: ${EXCEL_IMPORT_MAX_UNCOMPRESSED_BYTES:-67108864}
+  EXCEL_IMPORT_MAX_ROWS: ${EXCEL_IMPORT_MAX_ROWS:-20000}
+  EXCEL_IMPORT_MAX_COLUMNS: ${EXCEL_IMPORT_MAX_COLUMNS:-100}
+
+x-app-image: &app-image
+  image: domain-monitor-app:${APP_VERSION:-dev}
+  build:
+    context: .
+    args:
+      VERSION: ${APP_VERSION:-dev}
+      COMMIT: ${APP_COMMIT:-unknown}
+      BUILD_DATE: ${APP_BUILD_DATE:-unknown}
+
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-domainmonitor}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-domainmonitor}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - postgres18_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.10.0-alpine
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-56379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  migration:
+    <<: *app-image
+    command: ["/usr/local/bin/migrate", "-dir", "/app/migrations", "up"]
+    environment: *app-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *app-image
+    environment: *app-environment
+    ports:
+      - "127.0.0.1:${API_PORT:-8081}:8080"
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scheduler:
+    <<: *app-image
+    command: ["/usr/local/bin/scheduler"]
+    environment: *app-environment
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+  worker:
+    <<: *app-image
+    command: ["/usr/local/bin/worker"]
+    environment: *app-environment
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+  seed-admin:
+    <<: *app-image
+    command: ["/usr/local/bin/seed", "admin"]
+    profiles: ["tools"]
+    environment:
+      <<: *app-environment
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      BOOTSTRAP_ADMIN_DISPLAY_NAME: ${BOOTSTRAP_ADMIN_DISPLAY_NAME:-System Administrator}
+      BOOTSTRAP_ADMIN_LOCALE: ${BOOTSTRAP_ADMIN_LOCALE:-th}
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    restart: "no"
+
+  integration-test:
+    image: golang:1.26.6-alpine
+    profiles: ["test"]
+    working_dir: /src
+    command: ["go", "test", "-tags=integration", "./tests/integration/..."]
+    environment:
+      <<: *app-environment
+      APP_ENV: test
+    volumes:
+      - .:/src
+      - go_module_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres18_data:
+  redis_data:
+  go_module_cache:
+  go_build_cache:
