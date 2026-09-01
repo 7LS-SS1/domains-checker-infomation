@@ -93,6 +93,7 @@ docker compose --profile tools run --rm seed-admin
 API: `http://localhost:8081`  
 Health: `http://localhost:8081/health`  
 Readiness: `http://localhost:8081/ready`
+Frontend: `http://localhost:3000` (see [Frontend / Admin Dashboard](#frontend--admin-dashboard))
 
 ## Login and locale / เข้าสู่ระบบและเลือกภาษา
 
@@ -134,6 +135,71 @@ Direct migration examples:
 docker compose run --rm migration /usr/local/bin/migrate -dir /app/migrations status
 docker compose run --rm migration /usr/local/bin/migrate -dir /app/migrations up
 ```
+
+## Frontend / Admin Dashboard
+
+Next.js admin dashboard in [`web/`](web/) — Domains, Dashboard, Incidents, Finance, Recommendations, Reports, Import Center (Google Drive/Sheets/Excel), Probe Nodes, and Settings. Talks to the Go API only through server-side BFF route handlers; the browser never calls the Go API directly and never sees a session token or Google OAuth token. See [`web/FRONTEND_ARCHITECTURE.md`](web/FRONTEND_ARCHITECTURE.md) for the full design and [`web/API_GAPS.md`](web/API_GAPS.md) for confirmed backend/frontend contract gaps.
+
+### Run with the rest of the stack (Docker Compose)
+
+```powershell
+docker compose up --build -d
+docker compose --profile tools run --rm seed-admin
+```
+
+This also builds and starts the `web` service from [`web/Dockerfile`](web/Dockerfile) (production, multi-stage, non-root, Next.js `output: "standalone"`). Inside Compose it reaches the API over the internal Docker network only (`API_INTERNAL_URL=http://api:8080`, never a host-exposed port), and is itself exposed only on `127.0.0.1:3000`.
+
+Frontend: `http://localhost:3000`
+Frontend health (used by its own Docker `HEALTHCHECK`): `http://localhost:3000/login` (expected 200)
+
+### Run the frontend alone, against a running backend (development)
+
+```powershell
+docker compose up -d postgres redis migration api
+cd web
+npm install
+Copy-Item .env.local.example .env.local
+npm run dev
+```
+
+`http://localhost:3000` — hot-reloading Next.js dev server. `web/.env.local.example` only ever contains the non-secret `API_INTERNAL_URL=http://127.0.0.1:8081` placeholder; never add credentials to it.
+
+### Frontend commands (run from `web/`)
+
+```text
+npm run dev             Start the Next.js dev server
+npm run build            Production build (also run inside web/Dockerfile)
+npm run start             Serve a production build (non-Docker)
+npm run lint               ESLint (React Compiler + accessibility rules)
+npm run format             Prettier --write
+npm run format:check       Prettier --check
+npm run typecheck            TypeScript strict typecheck
+npm run test                   Unit/component tests (Vitest)
+npm run test:e2e                 E2E tests (Playwright — see below)
+```
+
+### Frontend E2E tests (Playwright)
+
+Most specs require a real backend and a seeded admin session, and skip cleanly without it:
+
+```powershell
+$env:E2E_ADMIN_EMAIL = "<seeded admin email>"
+$env:E2E_ADMIN_PASSWORD = "<seeded admin password>"
+# Optional — only needed for the specs that create/apply real data
+# (domain creation, Excel/Sheet import apply, probe registration token):
+$env:E2E_ALLOW_MUTATION = "true"
+cd web
+npm run test:e2e
+```
+
+Point `PLAYWRIGHT_BASE_URL` at a running Docker Compose `web` service (`http://127.0.0.1:3000`) to test the production build, or leave it unset to let Playwright start its own `next dev` server on `127.0.0.1:3100`. The suite covers: login/logout/session-expiry/401, domain create→detail→manual-check, finance/recommendations/reports, Google Drive OAuth (mocked-contract, no real Google account used), Excel import (real backend, fixture workbook, no secrets), probe registration tokens, settings, and a responsive/accessibility browser matrix (1440×900, 900×900, 390×844 — horizontal overflow, console errors, axe WCAG 2.2 AA serious/critical violations, keyboard navigation).
+
+### Frontend troubleshooting
+
+- **`web` container unhealthy / can't reach the API**: confirm `api` is healthy first (`docker compose ps`) — `web` depends on it via `condition: service_healthy`. Check `docker compose logs web`.
+- **Login succeeds but every page bounces back to `/login`**: the session cookie didn't reach the browser. Verify `Set-Cookie` on `POST /api/bff/auth/login` includes `domainintel_session` (not just `bff_csrf`); if only the CSRF cookie is present, something changed the cookie-writing order in `web/src/app/api/bff/auth/login/route.ts` — `response.cookies.set()` must run before the backend's raw `Set-Cookie` headers are appended, not after.
+- **Playwright specs skip immediately**: `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` are unset — this is deliberate (never commit real credentials), not a failure.
+- **`getByLabel`/`getByRole` "resolved to N elements" in a new spec**: Playwright's default text matching is a case-insensitive substring match — a short label like "Name" or "Menu" will also match a longer accessible name containing it (e.g. "Network name", "User menu: ..."). Add `{ exact: true }`.
 
 ## Security notes / หมายเหตุความปลอดภัย
 

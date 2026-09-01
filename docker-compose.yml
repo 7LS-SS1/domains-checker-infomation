@@ -164,6 +164,24 @@ services:
       disable: true
     restart: unless-stopped
 
+  web:
+    image: domain-monitor-web:${APP_VERSION:-dev}
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    environment:
+      # Server-only — the Next.js BFF route handlers are the only code that
+      # reads this; it is never sent to the browser bundle. Uses the
+      # in-network service name so the frontend never talks to the backend
+      # over a host-exposed port.
+      API_INTERNAL_URL: http://api:8080
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
   seed-admin:
     <<: *app-image
     command: ["/usr/local/bin/seed", "admin"]

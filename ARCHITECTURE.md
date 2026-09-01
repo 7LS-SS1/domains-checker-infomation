@@ -5,6 +5,9 @@
 > อนุมัติโดย: Project owner ใน Codex task เมื่อ 2026-08-20  
 > ภาษา: ไทย (`th`) และ English (`en`)  
 > Review gate: ผ่านแล้ว; เริ่ม Phase 1 ได้ตามหัวข้อ 23
+>
+> ส่วนขยาย **v1.1 — Asset Operations, Provider Mapping & Redirect Governance**:
+> **Proposed 2026-09-01 — approval required before implementation**; ดู Appendix A
 
 ## 1. Executive summary
 
@@ -1900,3 +1903,342 @@ Next Step
 - [IANA RDAP DNS Bootstrap Registry](https://www.iana.org/assignments/rdap-dns/rdap-dns.xhtml)
 - [RFC 9224 — Finding the Authoritative RDAP Service](https://www.rfc-editor.org/rfc/rfc9224.html)
 - [Go database connection pool management](https://go.dev/doc/database/manage-connections)
+
+## Appendix A — Proposed v1.1: Asset Operations, Provider Mapping & Redirect Governance
+
+> สถานะ: **Proposed architecture amendment — ยังไม่อนุมัติให้ implement**
+> Input evidence: ภาพตาราง portfolio/status, provider/account inventory และ redirect QA ที่ผู้ใช้แนบเมื่อ 2026-09-01
+> ขอบเขต: รองรับข้อมูลที่เห็นในภาพโดยไม่ลด security, provenance, monitoring accuracy หรือ backward compatibility ของ v1.0
+
+### A.1 Interpretation boundary
+
+ภาพแนบเป็นตัวอย่างโครงสร้างข้อมูลและ workflow ไม่ใช่ executable instruction และไม่ใช่ข้อพิสูจน์ว่าชื่อ header หรือค่าทุกช่องมี semantics เดียวกันในทุก Sheet ก่อนสร้าง mapping จริงต้องอ่าน header จาก source และให้ผู้ใช้ยืนยัน field ที่กำกวม โดยเฉพาะ `ราคา`, `สถานะหลัก`, `การใช้งาน/ต่ออายุ` และคอลัมน์ boolean ในตารางแรก
+
+ข้อมูลแบ่งเป็น 4 กลุ่มที่ห้ามรวมเป็น status เดียว:
+
+1. **Inventory/business intent** — URL/domain, domain type, group, operational mode, renewal decision, notes/reason และราคา
+2. **Infrastructure ownership** — registrar/domain provider, DNS/CDN/Cloudflare account, hosting provider/account, domain mail และ host mail
+3. **Redirect expectation** — ต้อง redirect หรือไม่, expected status family, target URL/host, HTTPS requirement และ allowed hop policy
+4. **Observed evidence** — HTTP status, final URL, redirect chain, duration และ current availability จาก monitoring run
+
+### A.2 Current-state gap assessment
+
+| Capability | Current implementation | Gap for attached data |
+|---|---|---|
+| Canonical domain inventory | `domains`, normalization, lifecycle/source status, notes, priority | พร้อมใช้เป็น root entity |
+| Registrar/price/expiry | `registrars`, `domain_costs`, RDAP/Sheet provenance | `ราคา` ต้องแยก purchase/renewal/currency; provider อื่นยังไม่มี normalized relation |
+| Monitoring and redirect evidence | `http_checks`, `redirect_hops`, current HTTP/redirect status | มี actual chain/final status แล้ว แต่ไม่มี expected target/compliance result |
+| Google Sheet/Excel import | Semantic mapping, preview/apply, provenance | มี config แบบ singleton และ parser ชนิด `domain_inventory` เดียว |
+| Provider/account topology | มีเพียง `domains.registrar_id` | ไม่มี DNS/CDN, host, mail, account reuse หรือ effective history |
+| Domain/group taxonomy | `business_priority` แบบ enum | ไม่มี admin-configurable domain type/group |
+| Credentials | OAuth tokens encryptedเฉพาะ Google connection | ไม่มี general secret boundary; importer ปัจจุบันเก็บ mapped `raw_values` จึงห้าม map `Pass` |
+| Dense portfolio UI | Domain list แสดง monitoring/lifecycle หลัก | ไม่มี saved column views, infrastructure view, redirect compliance view หรือ bulk metadata workflow |
+
+### A.3 Status model: declared intent must not overwrite observed truth
+
+ใช้ dimensions แยกกันดังนี้:
+
+| Dimension | Values / source | Authority |
+|---|---|---|
+| `lifecycle_status` | `active`, `inactive`, `archived` | Existing canonical inventory |
+| `source_status` | `present`, `missing_from_source`, `unknown` | Import/source presence |
+| `operational_mode` | `production`, `redirect_only`, `parked`, `reserved`, `maintenance`, `unknown` | Manual/imported business intent |
+| `renewal_decision` | `RENEW`, `DO_NOT_RENEW`, `HOLD`, `UNDECIDED` | Human decision history; separate from recommendation |
+| `availability_status` | Existing `ACTIVE`, `DEGRADED`, `UNAVAILABLE`, `UNKNOWN` | Derived monitoring state only |
+| `redirect_compliance_status` | `MATCH`, `MISMATCH`, `UNVERIFIED`, `NOT_APPLICABLE` | Derived by comparing expectation snapshot with observed evidence |
+| `inventory_completeness` | `COMPLETE`, `PARTIAL`, `MISSING_PROVIDER`, `MISSING_ACCOUNT` | Derived metadata quality |
+
+Imported legacy columns such as `สถานะหน้าเว็บ` or `HTTP Status` may be retained as `legacy_observation` with source time/provenance, but must never directly update current monitoring status. `สถานะหลัก` maps to a business dimension only after mapping confirmation.
+
+### A.4 Proposed canonical data model
+
+```mermaid
+erDiagram
+    DOMAINS ||--o| DOMAIN_ASSET_PROFILES : has
+    DOMAINS ||--o{ DOMAIN_LIFECYCLE_DECISIONS : receives
+    DOMAINS ||--o{ DOMAIN_SERVICE_ASSIGNMENTS : uses
+    SERVICE_PROVIDERS ||--o{ SERVICE_ACCOUNTS : owns
+    SERVICE_PROVIDERS ||--o{ SERVICE_PROVIDER_CAPABILITIES : supports
+    SERVICE_PROVIDERS ||--o{ DOMAIN_SERVICE_ASSIGNMENTS : supplies
+    SERVICE_ACCOUNTS ||--o{ DOMAIN_SERVICE_ASSIGNMENTS : authenticates
+    DOMAINS ||--o{ DOMAIN_GROUP_MEMBERSHIPS : grouped_as
+    DOMAIN_GROUPS ||--o{ DOMAIN_GROUP_MEMBERSHIPS : contains
+    DOMAIN_TYPES ||--o{ DOMAIN_ASSET_PROFILES : classifies
+    DOMAINS ||--o| REDIRECT_EXPECTATIONS : declares
+    REDIRECT_EXPECTATIONS ||--o{ REDIRECT_COMPLIANCE_ASSESSMENTS : evaluated_by
+    HTTP_CHECKS ||--o{ REDIRECT_COMPLIANCE_ASSESSMENTS : observes
+    DOMAINS ||--o{ LEGACY_ASSET_OBSERVATIONS : preserves
+    IMPORT_SOURCE_CONFIGS ||--o{ GOOGLE_SHEET_IMPORTS : produces
+
+    DOMAIN_ASSET_PROFILES {
+      uuid domain_id PK
+      uuid domain_type_id FK
+      text operational_mode
+      boolean has_signup_entry
+      boolean has_login_entry
+      text management_note
+      bigint version
+    }
+    SERVICE_PROVIDERS {
+      uuid id PK
+      text code UK
+      text display_name
+      text status
+    }
+    SERVICE_PROVIDER_CAPABILITIES {
+      uuid provider_id FK
+      text service_kind
+    }
+    SERVICE_ACCOUNTS {
+      uuid id PK
+      uuid provider_id FK
+      text service_kind
+      text display_label
+      text login_hint_masked
+      text secret_ref
+      text status
+    }
+    DOMAIN_SERVICE_ASSIGNMENTS {
+      uuid id PK
+      uuid domain_id FK
+      text service_kind
+      uuid provider_id FK
+      uuid service_account_id FK
+      boolean is_primary
+      timestamptz effective_from
+      timestamptz effective_to
+    }
+    REDIRECT_EXPECTATIONS {
+      uuid id PK
+      uuid domain_id FK
+      text expected_behavior
+      text target_url
+      int_array allowed_status_codes
+      text_array allowed_final_hosts
+      boolean require_https
+      int max_hops
+      bigint version
+    }
+    REDIRECT_COMPLIANCE_ASSESSMENTS {
+      uuid id PK
+      uuid expectation_id FK
+      uuid http_check_id FK
+      text status
+      jsonb reason_codes
+      jsonb expectation_snapshot
+      timestamptz assessed_at
+    }
+```
+
+#### A.4.1 Table responsibilities and constraints
+
+| Table | Responsibility / important constraints |
+|---|---|
+| `domain_asset_profiles` | One-to-one business metadata not suitable for monitoring evidence; optimistic version; no passwords/account identifiers |
+| `domain_lifecycle_decisions` | Immutable renewal/hold decision history with actor, reason, decision cycle, source and `supersedes_id`; recommendation remains separate |
+| `service_providers` / `service_provider_capabilities` | Normalized provider catalog plus many-to-many capabilities for registrar/DNS-CDN/hosting/mail; a provider is not forced into one kind |
+| `service_accounts` | Reusable non-secret account identity; only display label, masked login hint and external `secret_ref` |
+| `domain_service_assignments` | Effective-dated mapping for `registrar`, `dns_cdn`, `hosting`, `domain_mail`, `host_mail`; unique current primary assignment per domain/service kind |
+| `domain_types` | Admin-managed bilingual labels/color/order for values such as branded domain; stable slug is API value |
+| `domain_groups` / `domain_group_memberships` | Many-to-many grouping; stable slug, bilingual label, optional owner team |
+| `redirect_expectations` | Declared desired behavior; normalized absolute HTTP(S) target, allowed status codes, allowed final hosts and hop/HTTPS rules |
+| `redirect_compliance_assessments` | Immutable derived comparison per HTTP check; keeps expectation snapshot so history remains explainable after policy edits |
+| `legacy_asset_observations` | Append-only imported legacy status/value with observation time and source reference; explicitly excluded from current monitoring-state updates |
+
+`registrars` remains the RDAP/registration-specialized entity. A registrar may reference a `service_provider`, but existing `domains.registrar_id` and finance/RDAP contracts remain authoritative during migration.
+
+`service_provider_capabilities` has primary key `(provider_id, service_kind)`. Accounts and assignments use a composite foreign key to that capability, preventing an account labeled `hosting` from being attached to a provider that is not configured for hosting.
+
+### A.5 Secure account and credential boundary
+
+`USER` and `Pass` in the attached table are classified as restricted/secret input:
+
+- **Do not add** `username` or `password` columns to `domains`, `domain_asset_profiles`, import rows, audit JSON, logs, reports or exports.
+- Standard Sheet/Excel mapping must reject header aliases such as `pass`, `password`, `pwd`, `secret`, `token`, `api_key`, `private_key` with `SENSITIVE_COLUMN_FORBIDDEN`.
+- Import preview may show only the blocked header name and row count, never cell samples or hashes of secret values.
+- Preferred workflow: replace `USER`/`Pass` in the importable view with a non-secret `account_label` and an external vault `credential_ref`. `secret_ref` contains an opaque reference, not a retrievable secret.
+- Google Sheet source should be a sanitized view/range that excludes plaintext secret columns. If the same sheet cannot expose non-contiguous safe ranges, create a dedicated sanitized tab before connecting it.
+- Connector setup first performs a header-only request. Data rows are fetched only after forbidden headers and explicit projected ranges pass validation; multiple non-contiguous safe ranges require Google Sheets `batchGet` or a sanitized tab.
+- A future one-time credential migration utility is a separate security-reviewed tool: ADMIN-only, explicit reason/MFA, direct write to approved secret manager, memory zeroization where practical, no staging/raw snapshot, no retry payload persistence and audit only secret reference metadata.
+- Account emails/login identifiers are restricted PII. Store a display label and masked hint by default; full identifier requires an approved encrypted field/search design and separate permission.
+- New capabilities: `viewAssetMetadata`, `manageAssetMetadata`, `viewAccountRefs`, `manageAccountRefs`, `manageImportSources`; VIEWER never receives `secret_ref` or full account identifiers.
+
+### A.6 Field mapping from the attached tables
+
+| Source column/example | Canonical destination | Rule |
+|---|---|---|
+| `URL`, `ลิงค์เพจ` | `domains.domain_ascii` through normalizer | Required identity; preserve original input/provenance |
+| `ราคา` | `domain_costs` | Mapping wizard must require price kind and currency; ambiguous value is invalid, not guessed |
+| `การใช้งาน/ต่ออายุ` | `domain_asset_profiles.operational_mode` and/or `domain_lifecycle_decisions` | User confirms whether the column is usage state or renewal decision |
+| `สถานะหน้าเว็บ`, `HTTP Status` | `legacy_observations` only, or ignore | Current status remains monitoring-derived |
+| `รายละเอียด/เหตุผล`, `Note`, `Note IT` | scoped note/reason field | Do not collapse decision reason, infrastructure note and general note into one field |
+| `สถานะหลัก` | `operational_mode` or configured domain type | Requires value mapping confirmation |
+| `ลิงค์ปลายทาง (Redirect)`, `Target Redirect URL` | `redirect_expectations.target_url` | Absolute HTTP(S); normalize host; block credentials/fragments according to policy |
+| `Redirect` / `301 แล้ว` | redirect expectation behavior/status codes | Declared expected policy, not observed result |
+| actual final URL / redirect chain | existing `http_checks.effective_url` and `redirect_hops` | Generated by monitor only |
+| boolean page features (for example signup/login entry) | `domain_asset_profiles` feature flags | Exact header semantics must be confirmed before adding aliases |
+| `Domain Prov` | existing registrar plus `domain_service_assignments(service_kind=registrar)` | Resolve provider catalog; unknown provider creates review candidate, not silent free text |
+| `Domain Mail` | service account/assignment for `domain_mail` | Treat identifier as restricted; prefer account label/reference |
+| `Cloudflare` | `dns_cdn` provider/account assignment | Provider may be Cloudflare while account is a reusable reference |
+| `Host` | `hosting` provider assignment | Normalized provider catalog |
+| `Host Mail` | `host_mail` account assignment | Restricted account reference |
+| `Domain Type` | `domain_types` | Admin-managed taxonomy, bilingual label, stable slug |
+| `Group Type` | `domain_groups` membership | Many-to-many even if source currently has one value |
+| `USER`, `Pass` | no standard mapping | Replace with `account_label` + `credential_ref`; plaintext is forbidden |
+
+### A.7 Multi-dataset import architecture
+
+The current singleton `google_sheet_configs` and single `NormalizedRow` are insufficient. Extend without breaking the working domain import:
+
+1. Add typed source profiles with `name`, `dataset_kind`, `schema_version`, `source_kind`, connection/file metadata, sheet/ranges, mapping, schedule, ownership policy and enabled state.
+2. Supported initial dataset kinds:
+   - `domain_inventory`
+   - `domain_services`
+   - `domain_taxonomy`
+   - `redirect_expectations`
+   - `legacy_observations` (optional, never current-state authority)
+3. Implement a parser/apply registry rather than extending one giant struct:
+
+```text
+DatasetParser
+  Kind() DatasetKind
+  SchemaVersion() int
+  SensitiveHeaders() []HeaderPattern
+  ResolveMapping(headers, configured)
+  Normalize(row)
+  Match(normalized)
+  Diff(current, normalized)
+  Apply(tx, stagedRow, ownershipPolicy)
+```
+
+4. Every import stores `dataset_kind`, parser version, mapping snapshot, source hash, entity key, validation codes, diff and source ownership. Frequently queried data goes to normalized tables; JSONB is staging/evidence only.
+5. Missing-row behavior is dataset-specific and never hard-deletes:
+   - inventory: existing `missing_from_source`
+   - service assignment: close only the current assignment owned by that source
+   - group membership: remove only source-owned membership
+   - redirect expectation: mark source missing; retain last value until reviewed unless policy explicitly permits deactivation
+6. Apply remains preview/review/idempotent/transactional. A single import type must not modify fields owned by another dataset kind.
+
+#### A.7.1 Backward-compatible migration path
+
+- Add migration `00008_asset_operations.sql`; do not rewrite prior migrations.
+- Phase 9A keeps table/API compatibility:
+  - add `name`, `dataset_kind DEFAULT 'domain_inventory'`, `schema_version`, `source_status` to `google_sheet_configs`
+  - drop only `google_sheet_configs_singleton_idx`
+  - add unique key on source identity + dataset kind/name
+  - add `dataset_kind`, `parser_version`, `sensitivity_class` to imports
+  - rebuild the open-preview unique index to include `config_id`/`dataset_kind`; otherwise two dataset parsers over the same Sheet snapshot conflict
+  - keep `GET/PUT /google-sheets/config` as compatibility alias for the primary `domain_inventory` config
+- New plural APIs operate on source IDs. Existing working Google Drive connection and current config are migrated to a source named `Primary domain inventory` without changing its UUID.
+- Existing domain list/detail JSON remains unchanged in the expand phase; new metadata is served by nested endpoints or an opt-in `include` parameter to avoid breaking frontend schemas.
+- Contract phase later may rename generic import tables; do not rename in the first migration.
+- Scheduler changes from singleton `LIMIT 1` behavior to a bounded due-source claim loop using `FOR UPDATE SKIP LOCKED`; one source failure must not block other profiles, and idempotency keys include source/config ID plus due time.
+
+### A.8 Redirect expectation and compliance engine
+
+Validation for `redirect_expectations`:
+
+- `expected_behavior`: `NONE`, `PERMANENT`, `TEMPORARY`, `ANY_REDIRECT`, `EXACT_URL`
+- target must be absolute `http`/`https`, no userinfo; normalize IDN host with the domain normalizer
+- `allowed_status_codes` limited to `301,302,303,307,308`
+- `require_https=true` by default; explicit review required to allow downgrade
+- `max_hops` bounded `0..20`
+- exact URL comparison has configurable trailing-slash and query policy; defaults are explicit, not heuristic
+
+After each successful/partial HTTP observation, compare the saved expectation snapshot with:
+
+```text
+initial_status_code
+final_status_code
+effective_url
+ordered redirect_hops
+https_downgrade
+loop/error
+total_duration_us
+```
+
+Reason codes include `EXPECTED_REDIRECT_MISSING`, `UNEXPECTED_REDIRECT`, `WRONG_STATUS_CODE`, `WRONG_FINAL_HOST`, `WRONG_FINAL_URL`, `TOO_MANY_HOPS`, `HTTPS_DOWNGRADE`, `FINAL_HTTP_NOT_OK`, `OBSERVATION_INCOMPLETE`. The UI may render a compact string like the third image, but the API returns structured hops/reasons.
+
+### A.9 REST/BFF contract additions
+
+```text
+GET/POST        /api/v1/import-sources
+GET/PATCH       /api/v1/import-sources/{source_id}
+POST            /api/v1/import-sources/{source_id}/previews
+GET/POST        /api/v1/providers
+GET/PATCH       /api/v1/providers/{provider_id}
+GET/POST        /api/v1/service-accounts
+GET/PATCH       /api/v1/service-accounts/{account_id}
+GET/POST        /api/v1/domain-types
+GET/POST        /api/v1/domain-groups
+GET/PUT         /api/v1/domains/{domain_id}/asset-profile
+GET/POST        /api/v1/domains/{domain_id}/service-assignments
+PATCH/DELETE    /api/v1/domains/{domain_id}/service-assignments/{assignment_id}
+GET/PUT         /api/v1/domains/{domain_id}/redirect-expectation
+GET             /api/v1/domains/{domain_id}/redirect-compliance
+GET/POST        /api/v1/domains/{domain_id}/lifecycle-decisions
+```
+
+List filters add allowlisted `provider_id`, `service_kind`, `domain_type`, `group`, `operational_mode`, `renewal_decision`, `redirect_compliance` and `inventory_completeness`. Dense portfolio responses use a dedicated projection endpoint or `view=` projection rather than N+1 detail calls.
+
+### A.10 Admin UI information architecture
+
+#### Domain portfolio table
+
+- Saved view presets: `Monitoring`, `Renewal`, `Infrastructure`, `Redirect QA`
+- Server-side filtering/sorting; pinned domain column; explicit column chooser; user preference persisted
+- Infrastructure cells show provider + masked account label only; never username/password or `secret_ref`
+- Redirect QA cells show expectation, compliance badge, final URL, hop count, final HTTP and last checked time
+- Status tooltip always labels value as `Declared`, `Observed`, `Derived` or `Legacy` to prevent spreadsheet-style ambiguity
+- Bulk edit supports non-secret metadata only and requires preview/reason
+
+#### Domain detail
+
+Add tabs/cards:
+
+1. `Asset` — type, groups, operational mode, renewal decision/reason
+2. `Infrastructure` — registrar, DNS/CDN, host, domain mail, host mail assignments and account references
+3. `Redirect policy` — expected target/rules beside latest observed chain and compliance reasons
+4. Existing Monitoring/Finance/RDAP/Provenance remain separate
+
+#### Import Center
+
+- Source list instead of one Sheet config
+- Dataset-kind selector followed by a typed mapping wizard
+- Required/optional/forbidden columns with sample values redacted
+- Preview grouped by entity and action; secret-column finding blocks preview before staging
+- Explicit ownership and missing-row policy displayed before apply
+
+Desktop supports spreadsheet-density, while tablet/mobile use summary rows and a detail drawer; do not render every column in a horizontally tiny table by default.
+
+### A.11 Testing and delivery gates for the amendment
+
+#### Required tests
+
+- Migration from current `00007` database with existing Drive connection/config/import history; UUIDs and old endpoints preserved
+- Provider/account/group normalization, duplicate resolution and effective-dated assignment constraints
+- Sensitive header detection in Thai/English/common aliases; assert secret cell values never occur in DB, logs, API error, audit, report or test snapshot
+- Dataset ownership: one source cannot overwrite another dataset's fields; missing rows only close source-owned relations
+- Redirect compliance fixtures for no redirect, 301→200, multi-hop, wrong target, query/trailing-slash policy, loop, downgrade, timeout and partial observation
+- RBAC/redaction tests for ADMIN/STAFF/VIEWER and exports
+- Contract tests for old singular config endpoint plus new plural source endpoints
+- Compose E2E: sanitized Sheet/Excel preview → apply → portfolio views → detail; desktop/tablet/mobile and accessibility
+
+#### Phased implementation
+
+1. **Phase 9A — schema/security/import foundation:** migration, provider/taxonomy tables, source profiles, parser registry, sensitive-header gate, compatibility API
+2. **Phase 9B — asset metadata and infrastructure:** services/accounts/assignments, lifecycle decisions, provenance/audit, admin forms and views
+3. **Phase 9C — redirect governance:** expectation CRUD, compliance evaluator, history/detail/table projection and alerts
+4. **Phase 9D — migration/operations hardening:** sanitized legacy data migration, exports, performance indexes, backup/restore and security review
+
+No phase is complete without the mandatory gate in section 21.3. Live Sheet/Drive behavior, actual role sessions and browser layouts must be verified separately from unit/static checks.
+
+### A.12 Approval questions before code
+
+1. Confirm the exact meaning and allowed values of `สถานะหลัก`, `การใช้งาน/ต่ออายุ` and the two boolean columns visible in the first image.
+2. Confirm whether `Domain Mail`, `Cloudflare` and `Host Mail` are account labels, email addresses, or provider names.
+3. Select the secret policy: external vault reference (**recommended**) or a separately reviewed encrypted internal secret store.
+4. Confirm whether redirect matching is exact URL, final host only, or an allowed-host set; specify trailing slash/query handling.
+5. Confirm whether a domain may belong to multiple groups and whether types/groups are global admin-managed taxonomies.
+
+Until these five decisions are approved, implementation stops at this architecture amendment.

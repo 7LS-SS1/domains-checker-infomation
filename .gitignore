@@ -7,5 +7,6 @@ coverage.html
 dist/
 tmp/
 *.log
+cookies.txt
 *.test
 .DS_Store

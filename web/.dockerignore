@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+build
+coverage
+playwright-report
+test-results
+.env
+.env.local
+.env*.local
+*.pem
+npm-debug.log*
+.git
+.DS_Store
+*.tsbuildinfo

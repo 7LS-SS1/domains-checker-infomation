@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+/* Tailwind v4 defaults dark mode to prefers-color-scheme; this app toggles
+   a "dark" class on <html> via next-themes, so the strategy must be
+   explicitly switched to class-based. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+  --surface: #f8fafc;
+  --surface-foreground: #0f172a;
+  --border: #e2e8f0;
+  --muted-foreground: #475569;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --ring: #1d4ed8;
+
+  --status-emerald-bg: #ecfdf5;
+  --status-emerald-fg: #047857;
+  --status-emerald-border: #a7f3d0;
+
+  --status-amber-bg: #fffbeb;
+  --status-amber-fg: #b45309;
+  --status-amber-border: #fde68a;
+
+  --status-rose-bg: #fff1f2;
+  --status-rose-fg: #be123c;
+  --status-rose-border: #fecdd3;
+
+  --status-slate-bg: #f8fafc;
+  --status-slate-fg: #334155;
+  --status-slate-border: #e2e8f0;
+
+  --status-violet-bg: #f5f3ff;
+  --status-violet-fg: #6d28d9;
+  --status-violet-border: #ddd6fe;
+}
+
+.dark {
+  --background: #0b1220;
+  --foreground: #e2e8f0;
+  --surface: #111827;
+  --surface-foreground: #e2e8f0;
+  --border: #1f2937;
+  --muted-foreground: #94a3b8;
+  --primary: #60a5fa;
+  --primary-foreground: #0b1220;
+  --ring: #60a5fa;
+
+  --status-emerald-bg: #064e3b;
+  --status-emerald-fg: #6ee7b7;
+  --status-emerald-border: #10b981;
+
+  --status-amber-bg: #78350f;
+  --status-amber-fg: #fcd34d;
+  --status-amber-border: #d97706;
+
+  --status-rose-bg: #881337;
+  --status-rose-fg: #fda4af;
+  --status-rose-border: #e11d48;
+
+  --status-slate-bg: #1e293b;
+  --status-slate-fg: #cbd5e1;
+  --status-slate-border: #334155;
+
+  --status-violet-bg: #4c1d95;
+  --status-violet-fg: #c4b5fd;
+  --status-violet-border: #7c3aed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-ring: var(--ring);
+
+  --color-status-emerald-bg: var(--status-emerald-bg);
+  --color-status-emerald-fg: var(--status-emerald-fg);
+  --color-status-emerald-border: var(--status-emerald-border);
+  --color-status-amber-bg: var(--status-amber-bg);
+  --color-status-amber-fg: var(--status-amber-fg);
+  --color-status-amber-border: var(--status-amber-border);
+  --color-status-rose-bg: var(--status-rose-bg);
+  --color-status-rose-fg: var(--status-rose-fg);
+  --color-status-rose-border: var(--status-rose-border);
+  --color-status-slate-bg: var(--status-slate-bg);
+  --color-status-slate-fg: var(--status-slate-fg);
+  --color-status-slate-border: var(--status-slate-border);
+  --color-status-violet-bg: var(--status-violet-bg);
+  --color-status-violet-fg: var(--status-violet-fg);
+  --color-status-violet-border: var(--status-violet-border);
+
+  --font-sans: var(--font-inter), var(--font-noto-sans-thai), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Defensive: never let a page-level horizontal scrollbar appear, even if a
+   future change forgets to bound some wide element. Legitimate horizontal
+   scrolling (e.g. a wide data table) stays scoped to its own overflow-x-
+   auto container, unaffected by this. */
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Visible focus outline everywhere — never suppressed, per WCAG 2.2 AA. */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 0.375rem 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}

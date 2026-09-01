@@ -1,0 +1,717 @@
+{
+  "common": {
+    "appName": "Domain Monitoring & Asset Intelligence",
+    "loading": "กำลังโหลด...",
+    "retry": "ลองใหม่",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "logout": "ออกจากระบบ",
+    "skipToContent": "ข้ามไปยังเนื้อหาหลัก",
+    "languageLabel": "ภาษา",
+    "languageThai": "ไทย",
+    "languageEnglish": "English",
+    "themeLabel": "ธีม",
+    "themeLight": "สว่าง",
+    "themeDark": "มืด",
+    "themeSystem": "ตามระบบ",
+    "requestId": "รหัสคำขอ",
+    "menu": "เมนู",
+    "primaryNavigation": "เมนูหลัก",
+    "breadcrumb": "เส้นทางหน้า",
+    "userMenu": "เมนูผู้ใช้",
+    "loadError": "โหลดข้อมูลไม่สำเร็จ",
+    "previous": "ก่อนหน้า",
+    "next": "ถัดไป",
+    "pageOf": "หน้า {page} จาก {totalPages}",
+    "confirm": "ยืนยัน",
+    "reason": "เหตุผล",
+    "reasonPlaceholder": "อธิบายเหตุผลสำหรับบันทึกการตรวจสอบ",
+    "add": "เพิ่ม",
+    "creating": "กำลังสร้าง...",
+    "submitting": "กำลังส่งข้อมูล...",
+    "unknown": "ไม่ทราบ",
+    "none": "ไม่มี",
+    "yes": "ใช่",
+    "no": "ไม่ใช่",
+    "copy": "คัดลอก"
+  },
+  "nav": {
+    "dashboard": "แดชบอร์ด",
+    "domains": "โดเมน",
+    "incidents": "Incident",
+    "finance": "การเงิน",
+    "recommendations": "คำแนะนำ",
+    "reports": "รายงาน",
+    "sync": "ศูนย์นำเข้าข้อมูล",
+    "probes": "โหนดตรวจสอบ",
+    "settings": "การตั้งค่า"
+  },
+  "auth": {
+    "loginTitle": "เข้าสู่ระบบ",
+    "loginSubtitle": "Domain Monitoring & Asset Intelligence Platform",
+    "emailLabel": "อีเมล",
+    "passwordLabel": "รหัสผ่าน",
+    "showPassword": "แสดงรหัสผ่าน",
+    "hidePassword": "ซ่อนรหัสผ่าน",
+    "submit": "เข้าสู่ระบบ",
+    "submitting": "กำลังเข้าสู่ระบบ...",
+    "emailRequired": "กรุณากรอกอีเมล",
+    "emailInvalid": "รูปแบบอีเมลไม่ถูกต้อง",
+    "passwordRequired": "กรุณากรอกรหัสผ่าน",
+    "genericError": "ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง",
+    "sessionExpired": "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+  },
+  "dashboard": {
+    "title": "แดชบอร์ด",
+    "welcome": "สวัสดี, {name}",
+    "rolesLabel": "สิทธิ์การใช้งาน",
+    "kpi": {
+      "title": "ภาพรวมโดเมน",
+      "totalDomains": "โดเมนทั้งหมด",
+      "activeDomains": "ใช้งานอยู่",
+      "unavailableDomains": "ไม่พร้อมใช้งาน",
+      "permanentRedirects": "เปลี่ยนเส้นทางถาวร",
+      "suspectedIspBlock": "ต้องสงสัยถูกบล็อก ISP",
+      "highConfidenceIspBlock": "ยืนยันถูกบล็อก ISP",
+      "dnsErrors": "ข้อผิดพลาด DNS",
+      "tlsErrors": "ข้อผิดพลาด TLS",
+      "expiringSoon": "จะหมดอายุใน 90 วัน"
+    },
+    "distribution": {
+      "title": "การกระจายคำแนะนำ",
+      "renew": "ต่ออายุ",
+      "drop": "ยกเลิก",
+      "review": "ต้องทบทวน",
+      "profitOpportunity": "โอกาสทำกำไร",
+      "reviewListTitle": "โดเมนที่ต้องทบทวนล่าสุด",
+      "viewAll": "ดูทั้งหมด",
+      "empty": "ไม่มีโดเมนที่ต้องทบทวนในขณะนี้"
+    },
+    "budget": {
+      "title": "ภาพรวมงบประมาณ",
+      "currentCost": "ต้นทุนปัจจุบัน",
+      "renewalCost": "ต้นทุนต่ออายุ",
+      "estimatedTax": "ภาษีโดยประมาณ",
+      "annualBudget": "งบประมาณรายปี",
+      "complete": "ข้อมูลครบถ้วน",
+      "incomplete": "ข้อมูลไม่ครบถ้วน",
+      "windowNext30Days": "30 วันข้างหน้า",
+      "windowNext60Days": "60 วันข้างหน้า",
+      "windowNext90Days": "90 วันข้างหน้า",
+      "windowThisYear": "ปีนี้",
+      "domainCount": "จำนวนโดเมน",
+      "knownRenewals": "ทราบต้นทุนต่ออายุ",
+      "unknownCosts": "ไม่ทราบต้นทุน",
+      "renewalTotal": "ยอดรวมต่ออายุ",
+      "warningsTitle": "คำเตือนความครบถ้วนของข้อมูล"
+    },
+    "incidentsSection": {
+      "title": "Incident ที่กำลังเกิดขึ้น",
+      "empty": "ไม่มี incident ที่เปิดอยู่ในขณะนี้",
+      "viewAll": "ดู incident ทั้งหมด",
+      "openedAt": "เปิดเมื่อ"
+    },
+    "operational": {
+      "title": "สถานะระบบ",
+      "api": "API",
+      "postgres": "ฐานข้อมูล PostgreSQL",
+      "redis": "Redis",
+      "version": "เวอร์ชัน"
+    },
+    "quickActions": {
+      "title": "การดำเนินการด่วน",
+      "addDomain": "เพิ่มโดเมน",
+      "runRecommendations": "รันคำแนะนำ",
+      "importExcel": "นำเข้า Excel",
+      "connectDrive": "เชื่อมต่อ Google Drive",
+      "createReport": "สร้างรายงาน"
+    },
+    "currency": {
+      "label": "สกุลเงินที่ใช้รายงาน"
+    },
+    "refresh": {
+      "lastUpdated": "อัปเดตล่าสุด",
+      "refreshNow": "รีเฟรชตอนนี้",
+      "never": "ยังไม่เคยโหลด"
+    }
+  },
+  "incidents": {
+    "statuses": {
+      "open": "เปิดอยู่",
+      "acknowledged": "รับทราบแล้ว",
+      "closed": "ปิดแล้ว"
+    }
+  },
+  "sync": {
+    "title": "ศูนย์นำเข้าข้อมูล",
+    "tabs": {
+      "drive": "Google Drive",
+      "sheet": "ซิงค์ Google Sheet",
+      "excel": "นำเข้า Excel",
+      "history": "ประวัติการนำเข้า"
+    },
+    "drive": {
+      "notConfigured": "ยังไม่ได้ตั้งค่า Google Drive OAuth บนระบบหลังบ้านนี้",
+      "notConnected": "ยังไม่ได้เชื่อมต่อ",
+      "connected": "เชื่อมต่อแล้ว",
+      "connectedAs": "เชื่อมต่อในชื่อ {email}",
+      "connect": "เชื่อมต่อ Google Drive",
+      "disconnect": "ยกเลิกการเชื่อมต่อ",
+      "disconnectTitle": "ยกเลิกการเชื่อมต่อ Google Drive หรือไม่?",
+      "disconnectDescription": "จะลบการเชื่อมต่อที่บันทึกไว้ การตั้งค่าซิงค์ Sheet ที่อ้างอิงถึงจะใช้งานไม่ได้จนกว่าจะเชื่อมต่อใหม่",
+      "filesTitle": "Google Sheets ใน Drive ของคุณ",
+      "noFiles": "ไม่พบ Google Sheets",
+      "popupBlocked": "เบราว์เซอร์บล็อกหน้าต่างเชื่อมต่อ กรุณาอนุญาต popup สำหรับเว็บไซต์นี้แล้วลองใหม่",
+      "connectedBanner": "เชื่อมต่อ Google Drive สำเร็จ",
+      "connectFailedBanner": "ไม่สามารถเชื่อมต่อ Google Drive ได้ กรุณาลองใหม่อีกครั้ง"
+    },
+    "sheetConfig": {
+      "title": "การตั้งค่า Google Sheet",
+      "spreadsheetId": "รหัส Spreadsheet",
+      "sheetName": "ชื่อ Sheet",
+      "range": "ช่วงข้อมูล",
+      "enabled": "เปิดใช้งานการซิงค์",
+      "syncInterval": "ความถี่ในการซิงค์ (นาที, 5–10080)",
+      "notConfigured": "ยังไม่มีการตั้งค่าซิงค์ Sheet",
+      "save": "บันทึกการตั้งค่า",
+      "preview": "พรีวิวการซิงค์ตอนนี้",
+      "conflict": "การตั้งค่านี้มีการเปลี่ยนแปลงที่อื่น กรุณาโหลดใหม่ก่อนบันทึกอีกครั้ง",
+      "driveLinked": "เชื่อมกับบัญชี Google Drive ที่เชื่อมต่อไว้แล้ว — การพรีวิวจะใช้บัญชีนี้อ่านข้อมูลจาก Sheet",
+      "driveNotLinked": "ยังไม่ได้เชื่อมกับ Google Drive กรุณาเชื่อมต่อ Google Drive ก่อน (แท็บ Google Drive) เพื่อให้พรีวิวอ่านข้อมูลจาก Sheet ได้"
+    },
+    "excel": {
+      "title": "อัปโหลดไฟล์ Excel",
+      "file": "ไฟล์ (.xlsx)",
+      "sourceName": "ชื่อแหล่งที่มา",
+      "sheetName": "ชื่อ Sheet",
+      "upload": "อัปโหลดและพรีวิว",
+      "tooLarge": "ไฟล์มีขนาดใหญ่เกินขีดจำกัดที่ตั้งค่าไว้บนเซิร์ฟเวอร์",
+      "invalid": "ไม่สามารถตรวจสอบความถูกต้องของไฟล์หรือข้อมูลได้"
+    },
+    "review": {
+      "title": "แถวข้อมูลที่รอดำเนินการ",
+      "all": "ทั้งหมด",
+      "apply": "นำไปใช้",
+      "reject": "ปฏิเสธ",
+      "applyTitle": "นำการนำเข้านี้ไปใช้หรือไม่?",
+      "applyDescription": "เพิ่ม {add} รายการ, แก้ไข {modify} รายการ, {missing} รายการจะถูกทำเครื่องหมายว่าหายไปจากต้นทาง, {invalid} รายการที่ไม่ถูกต้องจะถูกยกเว้น",
+      "rejectTitle": "ปฏิเสธการนำเข้านี้หรือไม่?",
+      "alreadyApplied": "การนำเข้านี้ถูกนำไปใช้แล้ว",
+      "alreadyRejected": "การนำเข้านี้ถูกปฏิเสธแล้ว",
+      "missingWarning": "แถวที่ MISSING จะเปลี่ยนสถานะแหล่งข้อมูลและหยุดตารางเวลา จะไม่ถูกลบถาวร",
+      "columns": {
+        "row": "แถว",
+        "action": "การดำเนินการ",
+        "domain": "โดเมน",
+        "errors": "ข้อผิดพลาดในการตรวจสอบ"
+      },
+      "actions": {
+        "ADD": "เพิ่ม",
+        "MODIFY": "แก้ไข",
+        "UNCHANGED": "ไม่เปลี่ยนแปลง",
+        "MISSING": "หายไป",
+        "INVALID": "ไม่ถูกต้อง"
+      }
+    },
+    "history": {
+      "title": "ประวัติการนำเข้า",
+      "empty": "ยังไม่มีการนำเข้า",
+      "viewDetail": "ดู",
+      "backToList": "กลับไปที่รายการ",
+      "columns": {
+        "source": "แหล่งที่มา",
+        "target": "Spreadsheet / ไฟล์",
+        "status": "สถานะ",
+        "rows": "จำนวนแถว",
+        "previewedAt": "พรีวิวเมื่อ"
+      },
+      "sourceKind": {
+        "google_sheets": "Google Sheet",
+        "excel": "Excel"
+      },
+      "status": {
+        "preview": "พรีวิว",
+        "applying": "กำลังนำไปใช้",
+        "applied": "นำไปใช้แล้ว",
+        "rejected": "ปฏิเสธแล้ว",
+        "failed": "ล้มเหลว"
+      }
+    }
+  },
+  "financePage": {
+    "title": "การเงิน",
+    "currentCost": "ต้นทุนปัจจุบัน",
+    "renewalCost": "ต้นทุนต่ออายุ",
+    "estimatedTax": "ภาษีโดยประมาณ",
+    "annualBudget": "งบประมาณรายปี",
+    "complete": "ข้อมูลครบถ้วน",
+    "incomplete": "ข้อมูลไม่ครบถ้วน",
+    "windowsTitle": "ช่วงเวลาต่ออายุ",
+    "windowNext30Days": "30 วันข้างหน้า",
+    "windowNext60Days": "60 วันข้างหน้า",
+    "windowNext90Days": "90 วันข้างหน้า",
+    "windowThisYear": "ปีนี้",
+    "domainCount": "จำนวนโดเมน",
+    "knownRenewals": "ทราบต้นทุนต่ออายุ",
+    "unknownCosts": "ไม่ทราบต้นทุน",
+    "renewalTotal": "ยอดรวมต่ออายุ",
+    "warningsTitle": "คำเตือนความครบถ้วนของข้อมูล",
+    "addRate": "เพิ่มอัตราแลกเปลี่ยน",
+    "form": {
+      "title": "เพิ่มอัตราแลกเปลี่ยน",
+      "description": "อัตราแลกเปลี่ยนที่ตรวจสอบได้ ณ เวลาทำรายงาน rate เป็นเลขทศนิยมบวก (ไม่เกิน 10 ตำแหน่ง)",
+      "baseCurrency": "สกุลเงินต้นทาง",
+      "quoteCurrency": "สกุลเงินปลายทาง",
+      "rate": "อัตรา",
+      "source": "แหล่งที่มา",
+      "observedAt": "สังเกตเมื่อ",
+      "submit": "เพิ่มอัตรา"
+    }
+  },
+  "recommendationsPage": {
+    "title": "คำแนะนำ",
+    "filterAction": "การดำเนินการ",
+    "allOption": "ทั้งหมด",
+    "limitLabel": "จำนวนสูงสุด",
+    "runBulk": "รันคำแนะนำ",
+    "runConfirmTitle": "รันคำแนะนำแบบกลุ่มหรือไม่?",
+    "runConfirmDescription": "การดำเนินการนี้จะสร้างคำแนะนำใหม่ตามกฎที่กำหนดสำหรับโดเมนสูงสุด {limit} รายการ โดยใช้นโยบายที่กำหนดไว้ในปัจจุบัน",
+    "empty": "ไม่พบคำแนะนำที่ตรงกับตัวกรองปัจจุบัน",
+    "columns": {
+      "domain": "โดเมน",
+      "generatedAction": "คำแนะนำที่สร้าง",
+      "effectiveAction": "คำแนะนำที่มีผลจริง",
+      "opportunityLevel": "โอกาส",
+      "confidence": "ความเชื่อมั่น",
+      "generatedAt": "สร้างเมื่อ"
+    },
+    "overrideIndicator": "ถูกกำหนดเองแล้ว",
+    "profitOpportunityDisclaimer": "เป็นเพียงตัวชี้วัด ไม่ใช่มูลค่าประเมินหรือมูลค่าทางการเงินที่แท้จริง",
+    "reviewDisclaimer": "หลักฐานหรือข้อมูลต้นทุนอาจไม่ครบถ้วน ไม่ใช่ความล้มเหลวของระบบ"
+  },
+  "reportsPage": {
+    "title": "รายงาน",
+    "summaryTitle": "สรุปภาพรวม",
+    "createReport": "สร้างรายงาน",
+    "form": {
+      "title": "สร้างรายงาน",
+      "format": "รูปแบบไฟล์",
+      "currency": "สกุลเงินที่ใช้รายงาน",
+      "submit": "สร้าง"
+    },
+    "sessionReportsTitle": "รายงานที่สร้างในเซสชันนี้",
+    "noSessionReports": "ยังไม่มีรายงานที่สร้างในเซสชันนี้",
+    "metadataTitle": "รายงาน",
+    "status": "สถานะ",
+    "rowCount": "จำนวนแถว",
+    "sha256": "SHA-256",
+    "requestedAt": "ร้องขอเมื่อ",
+    "download": "ดาวน์โหลด",
+    "warningsTitle": "คำเตือนความครบถ้วนของข้อมูล",
+    "noPdfXlsx": "รองรับเฉพาะ JSON และ CSV เท่านั้น เนื่องจากระบบหลังบ้านยังไม่รองรับ PDF หรือ XLSX"
+  },
+  "incidentsPage": {
+    "title": "Incident",
+    "filterStatus": "สถานะ",
+    "allOption": "ทั้งหมด",
+    "columns": {
+      "domain": "โดเมน",
+      "status": "สถานะ",
+      "failureStage": "ขั้นตอนที่ล้มเหลว",
+      "errorCode": "รหัสข้อผิดพลาด",
+      "openedAt": "เปิดเมื่อ",
+      "closedAt": "ปิดเมื่อ",
+      "openFailureCount": "จำนวนล้มเหลวขณะเปิด",
+      "closeSuccessCount": "จำนวนสำเร็จก่อนปิด"
+    },
+    "empty": "ไม่พบ incident ที่ตรงกับตัวกรองปัจจุบัน",
+    "emptyNoData": "ยังไม่มีการบันทึก incident",
+    "viewRun": "ดูรายการตรวจสอบที่ทำให้เกิด incident",
+    "notClosed": "ยังไม่ปิด"
+  },
+  "probesPage": {
+    "title": "โหนดตรวจสอบ",
+    "createToken": "สร้างโทเคนลงทะเบียน",
+    "revoke": "เพิกถอน",
+    "revokeTitle": "เพิกถอน {name} หรือไม่?",
+    "revokeDescription": "โหนดนี้จะไม่สามารถยืนยันตัวตนหรือรับงานได้อีก ไม่สามารถย้อนกลับได้จากหน้านี้",
+    "empty": "ยังไม่มีการลงทะเบียนโหนดตรวจสอบ",
+    "never": "ไม่เคย",
+    "columns": {
+      "name": "ชื่อ",
+      "region": "ภูมิภาค / ประเทศ",
+      "status": "สถานะ",
+      "version": "เวอร์ชัน",
+      "lastSeen": "พบล่าสุด",
+      "clockOffset": "ความคลาดเคลื่อนของเวลา",
+      "registeredAt": "ลงทะเบียนเมื่อ"
+    },
+    "form": {
+      "title": "สร้างโทเคนลงทะเบียน",
+      "description": "สร้างโทเคนลงทะเบียนแบบใช้ครั้งเดียวสำหรับ probe agent ใหม่ในการลงทะเบียน โทเคนจะแสดงเพียงครั้งเดียวเท่านั้น",
+      "name": "ชื่อ",
+      "regionCode": "รหัสภูมิภาค",
+      "countryCode": "รหัสประเทศ",
+      "networkName": "ชื่อเครือข่าย (ไม่บังคับ)",
+      "ttlHours": "มีอายุ (ชั่วโมง)",
+      "submit": "สร้างโทเคน"
+    },
+    "reveal": {
+      "title": "สร้างโทเคนลงทะเบียนแล้ว",
+      "warning": "โทเคนนี้จะแสดงเพียงครั้งเดียวและไม่สามารถเรียกดูซ้ำได้ กรุณาคัดลอกและจัดเก็บอย่างปลอดภัยทันที",
+      "tokenLabel": "โทเคนลงทะเบียน",
+      "copy": "คัดลอก",
+      "copied": "คัดลอกแล้ว",
+      "expiresAt": "หมดอายุ",
+      "done": "เสร็จสิ้น"
+    }
+  },
+  "probeStatus": {
+    "ONLINE": "ออนไลน์",
+    "DEGRADED": "ประสิทธิภาพลดลง",
+    "OFFLINE": "ออฟไลน์",
+    "REVOKED": "เพิกถอนแล้ว",
+    "UPGRADE_REQUIRED": "ต้องอัปเกรด"
+  },
+  "settingsPage": {
+    "title": "การตั้งค่า",
+    "profile": {
+      "title": "โปรไฟล์",
+      "readOnlyNotice": "ฟิลด์โปรไฟล์เป็นแบบอ่านอย่างเดียว เนื่องจากระบบหลังบ้านยังไม่มี endpoint สำหรับแก้ไขจากหน้านี้",
+      "email": "อีเมล",
+      "displayName": "ชื่อที่แสดง",
+      "roles": "บทบาท",
+      "accountLocale": "ภาษาของบัญชี"
+    },
+    "language": {
+      "title": "ภาษา",
+      "description": "การเลือกภาษาที่นี่จะเปลี่ยนค่ากำหนดการแสดงผลของเบราว์เซอร์นี้เท่านั้น",
+      "supported": "รองรับโดยระบบหลังบ้าน"
+    },
+    "system": {
+      "title": "สถานะระบบ",
+      "service": "บริการ",
+      "backendVersion": "เวอร์ชันระบบหลังบ้าน",
+      "startedAt": "เริ่มทำงานเมื่อ",
+      "frontendVersion": "เวอร์ชัน build ของหน้าเว็บ",
+      "readiness": "การตรวจสอบความพร้อม",
+      "unreachable": "ไม่สามารถเชื่อมต่อ endpoint สถานะระบบได้"
+    },
+    "drive": {
+      "title": "การเชื่อมต่อ Google Drive",
+      "connected": "เชื่อมต่อแล้ว",
+      "notConnected": "ยังไม่ได้เชื่อมต่อ",
+      "notConfigured": "ยังไม่ได้ตั้งค่า Google Drive OAuth บนระบบหลังบ้านนี้",
+      "manageLink": "จัดการที่ศูนย์นำเข้าข้อมูล"
+    }
+  },
+  "recommendations": {
+    "actions": {
+      "RENEW": "ต่ออายุ",
+      "DROP": "ยกเลิก",
+      "REVIEW": "ต้องทบทวน",
+      "PROFIT_OPPORTUNITY": "โอกาสทำกำไร"
+    }
+  },
+  "financeWarnings": {
+    "TAX_POLICY_UNKNOWN": "ยังไม่ทราบนโยบายภาษีของบางโดเมน",
+    "FX_RATE_MISSING_OR_STALE": "อัตราแลกเปลี่ยนบางสกุลเงินไม่มีหรือเก่าเกินไป",
+    "INVALID_COST_RECORD": "พบข้อมูลต้นทุนที่ไม่ถูกต้องในบางรายการ",
+    "PURCHASE_TOTAL_INCOMPLETE": "ยอดรวมต้นทุนการซื้อยังไม่ครบถ้วน"
+  },
+  "forbidden": {
+    "title": "ไม่มีสิทธิ์เข้าถึง",
+    "description": "บัญชีของคุณเข้าสู่ระบบสำเร็จ แต่ไม่มีสิทธิ์ดำเนินการนี้",
+    "backToDashboard": "กลับไปที่แดชบอร์ด"
+  },
+  "systemUnavailable": {
+    "title": "ระบบไม่พร้อมให้บริการชั่วคราว",
+    "description": "ไม่สามารถเชื่อมต่อกับระบบยืนยันตัวตนได้ กรุณาลองใหม่อีกครั้งในอีกสักครู่",
+    "retry": "ลองใหม่"
+  },
+  "readiness": {
+    "label": "สถานะระบบ",
+    "checking": "กำลังตรวจสอบ...",
+    "ready": "ระบบพร้อมใช้งาน",
+    "degraded": "ระบบมีปัญหาบางส่วน",
+    "unreachable": "ไม่สามารถเชื่อมต่อระบบได้"
+  },
+  "errors": {
+    "unexpectedTitle": "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+    "unexpectedDescription": "กรุณาลองใหม่อีกครั้ง หากยังพบปัญหากรุณาติดต่อผู้ดูแลระบบพร้อมรหัสคำขอด้านล่าง",
+    "notFoundTitle": "ไม่พบหน้าที่ค้นหา",
+    "notFoundDescription": "หน้าที่คุณต้องการอาจถูกย้ายหรือไม่มีอยู่จริง",
+    "backHome": "กลับหน้าหลัก"
+  },
+  "domainStatus": {
+    "availability": {
+      "ACTIVE": "ใช้งานอยู่",
+      "UNAVAILABLE": "ใช้งานไม่ได้",
+      "DEGRADED": "มีปัญหาบางส่วน",
+      "UNKNOWN": "ไม่ทราบ"
+    },
+    "dns": {
+      "OK": "ปกติ",
+      "NXDOMAIN": "ไม่พบโดเมน (NXDOMAIN)",
+      "SERVFAIL": "เซิร์ฟเวอร์ล้มเหลว (SERVFAIL)",
+      "REFUSED": "ถูกปฏิเสธ",
+      "TIMEOUT": "หมดเวลา",
+      "NETWORK_ERROR": "ข้อผิดพลาดเครือข่าย",
+      "DISCREPANCY": "ผลลัพธ์ไม่ตรงกัน",
+      "UNKNOWN": "ไม่ทราบ"
+    },
+    "http": {
+      "OK": "ปกติ",
+      "REDIRECT": "เปลี่ยนเส้นทาง",
+      "CLIENT_ERROR": "ข้อผิดพลาดฝั่งไคลเอนต์",
+      "SERVER_ERROR": "ข้อผิดพลาดฝั่งเซิร์ฟเวอร์",
+      "TIMEOUT": "หมดเวลา",
+      "CONNECTION_ERROR": "เชื่อมต่อไม่ได้",
+      "UNKNOWN": "ไม่ทราบ"
+    },
+    "redirect": {
+      "NONE": "ไม่มีการเปลี่ยนเส้นทาง",
+      "TEMPORARY": "เปลี่ยนเส้นทางชั่วคราว",
+      "PERMANENT": "เปลี่ยนเส้นทางถาวร",
+      "LOOP": "เปลี่ยนเส้นทางวนซ้ำ",
+      "INVALID": "ไม่ถูกต้อง",
+      "HTTPS_DOWNGRADE": "ลดระดับเป็น HTTP",
+      "UNKNOWN": "ไม่ทราบ"
+    },
+    "isp": {
+      "NOT_DETECTED": "ไม่พบการบล็อก",
+      "SUSPECTED": "ต้องสงสัยถูกบล็อก",
+      "HIGH_CONFIDENCE_BLOCK": "ยืนยันถูกบล็อก",
+      "UNKNOWN": "ไม่ทราบ"
+    },
+    "tls": {
+      "VALID": "ใบรับรองถูกต้อง",
+      "EXPIRING": "ใกล้หมดอายุ",
+      "EXPIRED": "หมดอายุแล้ว",
+      "HOSTNAME_MISMATCH": "ชื่อโฮสต์ไม่ตรงกัน",
+      "INVALID": "ไม่ถูกต้อง",
+      "ERROR": "ข้อผิดพลาด",
+      "NOT_APPLICABLE": "ไม่เกี่ยวข้อง",
+      "UNKNOWN": "ไม่ทราบ"
+    },
+    "lifecycle": {
+      "active": "ใช้งาน",
+      "inactive": "ไม่ใช้งาน",
+      "archived": "เก็บถาวรแล้ว"
+    },
+    "source": {
+      "present": "พบในต้นทาง",
+      "missing_from_source": "หายไปจากต้นทาง",
+      "unknown": "ไม่ทราบ"
+    },
+    "priority": {
+      "low": "ต่ำ",
+      "medium": "ปานกลาง",
+      "high": "สูง",
+      "critical": "วิกฤต"
+    }
+  },
+  "domains": {
+    "title": "โดเมน",
+    "addDomain": "เพิ่มโดเมน",
+    "searchPlaceholder": "ค้นหาโดเมน...",
+    "filterLifecycle": "สถานะวงจรชีวิต",
+    "filterSource": "สถานะแหล่งข้อมูล",
+    "allOption": "ทั้งหมด",
+    "columns": {
+      "domain": "โดเมน",
+      "lifecycle": "วงจรชีวิต",
+      "source": "แหล่งข้อมูล",
+      "availability": "สถานะใช้งาน",
+      "confidence": "ความเชื่อมั่น",
+      "http": "HTTP",
+      "redirect": "การเปลี่ยนเส้นทาง",
+      "isp": "ISP",
+      "tls": "TLS",
+      "priority": "ความสำคัญ",
+      "expiry": "วันหมดอายุ",
+      "lastChecked": "ตรวจล่าสุด"
+    },
+    "empty": "ไม่พบโดเมนที่ตรงกับตัวกรองปัจจุบัน",
+    "emptyNoData": "ยังไม่มีการเพิ่มโดเมนใดๆ",
+    "expiresIn": "{days, plural, =0 {หมดอายุวันนี้} other {หมดอายุในอีก # วัน}}",
+    "expired": "{days, plural, other {หมดอายุแล้ว # วันก่อน}}",
+    "noExpiration": "ไม่มีวันหมดอายุ",
+    "neverChecked": "ยังไม่เคยตรวจสอบ",
+    "registrarId": "รหัสผู้รับจดทะเบียน",
+    "noRegistrar": "ไม่มีข้อมูลผู้รับจดทะเบียน",
+    "form": {
+      "title": "เพิ่มโดเมน",
+      "description": "ลงทะเบียนโดเมนใหม่เพื่อเริ่มตรวจสอบ ระบบหลังบ้านจะทำการ normalize และตรวจสอบความถูกต้อง",
+      "domainLabel": "โดเมน",
+      "domainPlaceholder": "example.com",
+      "domainRequired": "กรุณากรอกโดเมน",
+      "businessPriorityLabel": "ความสำคัญทางธุรกิจ",
+      "expectedContentModeLabel": "รูปแบบเนื้อหาที่คาดหวัง",
+      "monitoringEnabledLabel": "เปิดใช้งานการตรวจสอบ",
+      "expirationLabel": "วันหมดอายุ (ไม่บังคับ)",
+      "notesLabel": "หมายเหตุ",
+      "submit": "เพิ่มโดเมน"
+    },
+    "actions": {
+      "archive": "เก็บถาวร",
+      "restore": "กู้คืน",
+      "archiveTitle": "เก็บถาวรโดเมนนี้หรือไม่?",
+      "archiveDescription": "โดเมนจะหยุดถูกตรวจสอบ แต่หลักฐานและประวัติทั้งหมดจะยังคงอยู่ สามารถย้อนกลับได้ด้วยการกู้คืน",
+      "restoreTitle": "กู้คืนโดเมนนี้หรือไม่?",
+      "restoreDescription": "โดเมนจะกลับไปมีสถานะวงจรชีวิตเป็นใช้งาน"
+    },
+    "conflict": {
+      "title": "ข้อมูลนี้มีการเปลี่ยนแปลง",
+      "description": "มีผู้อื่นแก้ไขโดเมนนี้หลังจากที่คุณโหลดข้อมูล กรุณาโหลดใหม่เพื่อดูข้อมูลล่าสุดก่อนลองอีกครั้ง"
+    }
+  },
+  "domainDetail": {
+    "backToDomains": "กลับไปหน้าโดเมน",
+    "notFound": "ไม่พบโดเมน",
+    "tabs": {
+      "overview": "ภาพรวม",
+      "monitoring": "การตรวจสอบ",
+      "rdap": "RDAP",
+      "finance": "การเงิน",
+      "overrides": "ค่าที่กำหนดเอง",
+      "recommendation": "คำแนะนำ",
+      "provenance": "แหล่งที่มาข้อมูล"
+    },
+    "overview": {
+      "effectiveStateTitle": "สถานะปัจจุบันที่มีผล",
+      "effectiveStateDescription": "คำนวณจากหลักฐานหลายแหล่งพร้อมกลไก hysteresis ไม่ใช่ผลจากการตรวจครั้งเดียว",
+      "detailsTitle": "รายละเอียดโดเมน",
+      "originalInput": "ข้อมูลที่กรอกครั้งแรก",
+      "registrableDomain": "โดเมนที่จดทะเบียนได้",
+      "notes": "หมายเหตุ",
+      "noNotes": "ไม่มีหมายเหตุ",
+      "editButton": "แก้ไข",
+      "consecutiveFailures": "ล้มเหลวติดต่อกัน",
+      "consecutiveSuccesses": "สำเร็จติดต่อกัน",
+      "failureStage": "ขั้นตอนที่ล้มเหลว",
+      "errorCode": "รหัสข้อผิดพลาด",
+      "confidence": "ความเชื่อมั่น",
+      "contentMode": "รูปแบบเนื้อหา",
+      "monitoringLabel": "การตรวจสอบ",
+      "created": "สร้างเมื่อ"
+    },
+    "edit": {
+      "title": "แก้ไขโดเมน",
+      "description": "ใช้ optimistic concurrency หากข้อมูลนี้ถูกแก้ไขที่อื่นหลังจากคุณโหลดข้อมูล การบันทึกจะถูกปฏิเสธ เพื่อไม่ให้เขียนทับการเปลี่ยนแปลงของผู้อื่นโดยไม่รู้ตัว",
+      "submit": "บันทึกการเปลี่ยนแปลง"
+    },
+    "actions": {
+      "manualCheck": "ตรวจสอบตอนนี้",
+      "manualCheckRunning": "กำลังตรวจสอบ...",
+      "manualCheckAccepted": "รับคำขอตรวจสอบแล้ว กำลังรอผล..."
+    },
+    "monitoring": {
+      "runsTitle": "รายการตรวจสอบ",
+      "historyTitle": "ประวัติ",
+      "window": "ช่วงเวลา",
+      "window24h": "24 ชั่วโมง",
+      "window7d": "7 วัน",
+      "window30d": "30 วัน",
+      "window90d": "90 วัน",
+      "uptimePercentage": "เวลาที่ใช้งานได้",
+      "monitoringCoverage": "ความครอบคลุมการตรวจสอบ",
+      "incidentCount": "จำนวน incident",
+      "statusChangeCount": "จำนวนการเปลี่ยนสถานะ",
+      "averageResponseMs": "เวลาตอบสนองเฉลี่ย",
+      "insufficientData": "ยังมีข้อมูลไม่เพียงพอ",
+      "timelineTitle": "ไทม์ไลน์การเปลี่ยนสถานะ",
+      "noTimelineEntries": "ไม่มีการเปลี่ยนสถานะในช่วงเวลานี้",
+      "noRuns": "ยังไม่มีรายการตรวจสอบ",
+      "runDetailTitle": "รายละเอียดการตรวจสอบ",
+      "dnsChecksTitle": "การตรวจสอบ DNS",
+      "httpChecksTitle": "การตรวจสอบ HTTP",
+      "rawRun": "ข้อมูลดิบของรายการตรวจสอบ",
+      "rawResult": "ข้อมูลดิบของผลลัพธ์",
+      "rawDnsCheck": "ข้อมูลดิบของ DNS",
+      "rawHttpCheck": "ข้อมูลดิบของ HTTP",
+      "vantage": "จุดสังเกตการณ์",
+      "redirectChainTitle": "ลำดับการเปลี่ยนเส้นทาง",
+      "noRedirects": "ไม่มีการเปลี่ยนเส้นทางที่บันทึกไว้",
+      "tlsTitle": "TLS",
+      "statusLabel": "สถานะ",
+      "triggerLabel": "ทริกเกอร์",
+      "scheduledLabel": "กำหนดเวลา",
+      "policyLabel": "เวอร์ชันนโยบาย"
+    },
+    "rdap": {
+      "title": "ข้อมูลการจดทะเบียน RDAP",
+      "forceCheck": "บังคับตรวจสอบ RDAP",
+      "registrar": "ผู้รับจดทะเบียน",
+      "registrarIana": "รหัส IANA ของผู้รับจดทะเบียน",
+      "nameservers": "เนมเซิร์ฟเวอร์",
+      "dnssec": "DNSSEC",
+      "registrationAt": "จดทะเบียนเมื่อ",
+      "expirationAt": "หมดอายุ",
+      "updatedAt": "อัปเดตล่าสุดที่ registry",
+      "statuses": "สถานะ",
+      "notFound": "ยังไม่มีผล RDAP สำหรับโดเมนนี้",
+      "conflictsTitle": "ความขัดแย้งของแหล่งที่มาข้อมูล",
+      "noConflicts": "ไม่พบความขัดแย้ง",
+      "cached": "ผลลัพธ์จากแคช",
+      "bootstrapStale": "ข้อมูล bootstrap ล้าสมัย"
+    },
+    "finance": {
+      "title": "ต้นทุน",
+      "addCost": "เพิ่มต้นทุน",
+      "noCosts": "ยังไม่มีข้อมูลต้นทุน",
+      "form": {
+        "title": "เพิ่มต้นทุนโดเมน",
+        "costType": "ประเภทต้นทุน",
+        "amount": "จำนวนเงิน",
+        "currency": "สกุลเงิน",
+        "taxRate": "อัตราภาษี (0–1, ไม่บังคับ)",
+        "taxMode": "รูปแบบภาษี",
+        "billingCycleMonths": "รอบการเรียกเก็บ (เดือน)",
+        "effectiveFrom": "มีผลตั้งแต่",
+        "sourceReference": "อ้างอิงแหล่งที่มา",
+        "submit": "เพิ่มต้นทุน"
+      }
+    },
+    "overrides": {
+      "title": "ค่าที่กำหนดเอง",
+      "create": "สร้างค่าที่กำหนดเอง",
+      "revoke": "ยกเลิก",
+      "noOverrides": "ไม่มีค่าที่กำหนดเองในระบบ",
+      "active": "ใช้งานอยู่",
+      "revoked": "ยกเลิกแล้ว",
+      "revokeTitle": "ยกเลิกค่าที่กำหนดเองนี้หรือไม่?",
+      "revokeDescription": "ฟิลด์นี้จะกลับไปใช้ค่าที่คำนวณ/จากแหล่งข้อมูลตามปกติ",
+      "form": {
+        "title": "สร้างค่าที่กำหนดเอง",
+        "field": "ฟิลด์",
+        "value": "ค่าที่กำหนดเอง",
+        "expiresAt": "หมดอายุเมื่อ (ไม่บังคับ)",
+        "submit": "สร้างค่าที่กำหนดเอง"
+      }
+    },
+    "recommendation": {
+      "title": "คำแนะนำ",
+      "generate": "สร้างคำแนะนำ",
+      "notGenerated": "ยังไม่มีคำแนะนำที่สร้างไว้",
+      "generatedAction": "คำแนะนำที่สร้าง",
+      "effectiveAction": "คำแนะนำที่มีผลจริง",
+      "opportunityLevel": "ระดับโอกาส",
+      "confidence": "ความเชื่อมั่น",
+      "policyVersion": "เวอร์ชันนโยบาย",
+      "reasonsTitle": "เหตุผล",
+      "evidenceTitle": "หลักฐานอ้างอิง",
+      "overrideBanner": "มีค่าที่กำหนดเองเปลี่ยนคำแนะนำที่มีผลจริงของโดเมนนี้",
+      "overrideReason": "เหตุผลของการกำหนดเอง"
+    },
+    "provenance": {
+      "title": "แหล่งที่มาของข้อมูลรายฟิลด์",
+      "noEntries": "ไม่มีข้อมูลแหล่งที่มา",
+      "field": "ฟิลด์",
+      "source": "แหล่งที่มา",
+      "value": "ค่า",
+      "observedAt": "สังเกตเมื่อ",
+      "current": "ปัจจุบัน"
+    }
+  }
+}

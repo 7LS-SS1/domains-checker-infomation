@@ -1,0 +1,717 @@
+{
+  "common": {
+    "appName": "Domain Monitoring & Asset Intelligence",
+    "loading": "Loading...",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "logout": "Sign out",
+    "skipToContent": "Skip to main content",
+    "languageLabel": "Language",
+    "languageThai": "ไทย",
+    "languageEnglish": "English",
+    "themeLabel": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "requestId": "Request ID",
+    "menu": "Menu",
+    "primaryNavigation": "Main navigation",
+    "breadcrumb": "Breadcrumb",
+    "userMenu": "User menu",
+    "loadError": "Failed to load data",
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {totalPages}",
+    "confirm": "Confirm",
+    "reason": "Reason",
+    "reasonPlaceholder": "Explain why, for the audit log",
+    "add": "Add",
+    "creating": "Creating...",
+    "submitting": "Submitting...",
+    "unknown": "Unknown",
+    "none": "None",
+    "yes": "Yes",
+    "no": "No",
+    "copy": "Copy"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "domains": "Domains",
+    "incidents": "Incidents",
+    "finance": "Finance",
+    "recommendations": "Recommendations",
+    "reports": "Reports",
+    "sync": "Import Center",
+    "probes": "Probe Nodes",
+    "settings": "Settings"
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginSubtitle": "Domain Monitoring & Asset Intelligence Platform",
+    "emailLabel": "Email",
+    "passwordLabel": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "emailRequired": "Email is required",
+    "emailInvalid": "Enter a valid email address",
+    "passwordRequired": "Password is required",
+    "genericError": "Could not reach the server. Please try again.",
+    "sessionExpired": "Your session expired. Please sign in again."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}",
+    "rolesLabel": "Roles",
+    "kpi": {
+      "title": "Domain overview",
+      "totalDomains": "Total domains",
+      "activeDomains": "Active",
+      "unavailableDomains": "Unavailable",
+      "permanentRedirects": "Permanent redirects",
+      "suspectedIspBlock": "Suspected ISP block",
+      "highConfidenceIspBlock": "Confirmed ISP block",
+      "dnsErrors": "DNS errors",
+      "tlsErrors": "TLS errors",
+      "expiringSoon": "Expiring within 90 days"
+    },
+    "distribution": {
+      "title": "Recommendation distribution",
+      "renew": "Renew",
+      "drop": "Drop",
+      "review": "Needs review",
+      "profitOpportunity": "Profit opportunity",
+      "reviewListTitle": "Recently flagged for review",
+      "viewAll": "View all",
+      "empty": "No domains currently need review"
+    },
+    "budget": {
+      "title": "Budget overview",
+      "currentCost": "Current cost",
+      "renewalCost": "Renewal cost",
+      "estimatedTax": "Estimated tax",
+      "annualBudget": "Annual budget",
+      "complete": "Data complete",
+      "incomplete": "Data incomplete",
+      "windowNext30Days": "Next 30 days",
+      "windowNext60Days": "Next 60 days",
+      "windowNext90Days": "Next 90 days",
+      "windowThisYear": "This year",
+      "domainCount": "Domains",
+      "knownRenewals": "Known renewal cost",
+      "unknownCosts": "Unknown cost",
+      "renewalTotal": "Renewal total",
+      "warningsTitle": "Completeness warnings"
+    },
+    "incidentsSection": {
+      "title": "Active incidents",
+      "empty": "No open incidents right now",
+      "viewAll": "View all incidents",
+      "openedAt": "Opened"
+    },
+    "operational": {
+      "title": "System status",
+      "api": "API",
+      "postgres": "PostgreSQL",
+      "redis": "Redis",
+      "version": "Version"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "addDomain": "Add domain",
+      "runRecommendations": "Run recommendations",
+      "importExcel": "Import Excel",
+      "connectDrive": "Connect Google Drive",
+      "createReport": "Create report"
+    },
+    "currency": {
+      "label": "Reporting currency"
+    },
+    "refresh": {
+      "lastUpdated": "Last updated",
+      "refreshNow": "Refresh now",
+      "never": "Not loaded yet"
+    }
+  },
+  "incidents": {
+    "statuses": {
+      "open": "Open",
+      "acknowledged": "Acknowledged",
+      "closed": "Closed"
+    }
+  },
+  "sync": {
+    "title": "Import Center",
+    "tabs": {
+      "drive": "Google Drive",
+      "sheet": "Google Sheet Sync",
+      "excel": "Excel Import",
+      "history": "Import History"
+    },
+    "drive": {
+      "notConfigured": "Google Drive OAuth is not configured on this backend",
+      "notConnected": "Not connected",
+      "connected": "Connected",
+      "connectedAs": "Connected as {email}",
+      "connect": "Connect Google Drive",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect Google Drive?",
+      "disconnectDescription": "Removes the stored connection. Sheet sync configurations referencing it will stop working until reconnected.",
+      "filesTitle": "Google Sheets in your Drive",
+      "noFiles": "No Google Sheets found",
+      "popupBlocked": "Your browser blocked the connection window. Allow popups for this site and try again.",
+      "connectedBanner": "Google Drive connected successfully.",
+      "connectFailedBanner": "Could not complete the Google Drive connection. Please try again."
+    },
+    "sheetConfig": {
+      "title": "Google Sheet configuration",
+      "spreadsheetId": "Spreadsheet ID",
+      "sheetName": "Sheet name",
+      "range": "Range",
+      "enabled": "Sync enabled",
+      "syncInterval": "Sync interval (minutes, 5–10080)",
+      "notConfigured": "No sheet sync configured yet",
+      "save": "Save configuration",
+      "preview": "Preview sync now",
+      "conflict": "This configuration changed elsewhere — reload before saving again.",
+      "driveLinked": "Linked to your connected Google Drive account — preview will use it to read the sheet.",
+      "driveNotLinked": "Not linked to a Google Drive connection yet. Connect Google Drive first (Google Drive tab) so preview can read the sheet."
+    },
+    "excel": {
+      "title": "Upload Excel workbook",
+      "file": "File (.xlsx)",
+      "sourceName": "Source name",
+      "sheetName": "Sheet name",
+      "upload": "Upload and preview",
+      "tooLarge": "The file is too large for this server's configured limit.",
+      "invalid": "The workbook or its data could not be validated."
+    },
+    "review": {
+      "title": "Staged rows",
+      "all": "All",
+      "apply": "Apply",
+      "reject": "Reject",
+      "applyTitle": "Apply this import?",
+      "applyDescription": "{add} to add, {modify} to modify, {missing} will be marked missing from source, {invalid} invalid rows will be excluded.",
+      "rejectTitle": "Reject this import?",
+      "alreadyApplied": "This import has already been applied.",
+      "alreadyRejected": "This import was rejected.",
+      "missingWarning": "MISSING rows change source status and pause their schedule — they are never hard-deleted.",
+      "columns": {
+        "row": "Row",
+        "action": "Action",
+        "domain": "Domain",
+        "errors": "Validation errors"
+      },
+      "actions": {
+        "ADD": "Add",
+        "MODIFY": "Modify",
+        "UNCHANGED": "Unchanged",
+        "MISSING": "Missing",
+        "INVALID": "Invalid"
+      }
+    },
+    "history": {
+      "title": "Import history",
+      "empty": "No imports yet",
+      "viewDetail": "View",
+      "backToList": "Back to list",
+      "columns": {
+        "source": "Source",
+        "target": "Spreadsheet / file",
+        "status": "Status",
+        "rows": "Rows",
+        "previewedAt": "Previewed"
+      },
+      "sourceKind": {
+        "google_sheets": "Google Sheet",
+        "excel": "Excel"
+      },
+      "status": {
+        "preview": "Preview",
+        "applying": "Applying",
+        "applied": "Applied",
+        "rejected": "Rejected",
+        "failed": "Failed"
+      }
+    }
+  },
+  "financePage": {
+    "title": "Finance",
+    "currentCost": "Current cost",
+    "renewalCost": "Renewal cost",
+    "estimatedTax": "Estimated tax",
+    "annualBudget": "Annual budget",
+    "complete": "Data complete",
+    "incomplete": "Data incomplete",
+    "windowsTitle": "Renewal windows",
+    "windowNext30Days": "Next 30 days",
+    "windowNext60Days": "Next 60 days",
+    "windowNext90Days": "Next 90 days",
+    "windowThisYear": "This year",
+    "domainCount": "Domains",
+    "knownRenewals": "Known renewal cost",
+    "unknownCosts": "Unknown cost",
+    "renewalTotal": "Renewal total",
+    "warningsTitle": "Completeness warnings",
+    "addRate": "Add exchange rate",
+    "form": {
+      "title": "Add exchange rate",
+      "description": "Audited report-time exchange rate. Rate is a positive decimal string (up to 10 decimal places).",
+      "baseCurrency": "Base currency",
+      "quoteCurrency": "Quote currency",
+      "rate": "Rate",
+      "source": "Source",
+      "observedAt": "Observed at",
+      "submit": "Add rate"
+    }
+  },
+  "recommendationsPage": {
+    "title": "Recommendations",
+    "filterAction": "Action",
+    "allOption": "All",
+    "limitLabel": "Limit",
+    "runBulk": "Run recommendations",
+    "runConfirmTitle": "Run bulk recommendations?",
+    "runConfirmDescription": "This generates a new rule-based recommendation for up to {limit} domains, using the current deterministic policy.",
+    "empty": "No recommendations match the current filter",
+    "columns": {
+      "domain": "Domain",
+      "generatedAction": "Generated",
+      "effectiveAction": "Effective",
+      "opportunityLevel": "Opportunity",
+      "confidence": "Confidence",
+      "generatedAt": "Generated"
+    },
+    "overrideIndicator": "Manually overridden",
+    "profitOpportunityDisclaimer": "An indicator only — never an appraised or estimated monetary value.",
+    "reviewDisclaimer": "Evidence or cost data may be incomplete — this is not a system failure."
+  },
+  "reportsPage": {
+    "title": "Reports",
+    "summaryTitle": "Summary",
+    "createReport": "Create report",
+    "form": {
+      "title": "Create report",
+      "format": "Format",
+      "currency": "Reporting currency",
+      "submit": "Create"
+    },
+    "sessionReportsTitle": "Reports created this session",
+    "noSessionReports": "No reports created in this session yet",
+    "metadataTitle": "Report",
+    "status": "Status",
+    "rowCount": "Row count",
+    "sha256": "SHA-256",
+    "requestedAt": "Requested",
+    "download": "Download",
+    "warningsTitle": "Completeness warnings",
+    "noPdfXlsx": "JSON and CSV only — the backend does not support PDF or XLSX export."
+  },
+  "incidentsPage": {
+    "title": "Incidents",
+    "filterStatus": "Status",
+    "allOption": "All",
+    "columns": {
+      "domain": "Domain",
+      "status": "Status",
+      "failureStage": "Failure stage",
+      "errorCode": "Error code",
+      "openedAt": "Opened",
+      "closedAt": "Closed",
+      "openFailureCount": "Open failures",
+      "closeSuccessCount": "Close successes"
+    },
+    "empty": "No incidents match the current filter",
+    "emptyNoData": "No incidents have been recorded",
+    "viewRun": "View triggering run",
+    "notClosed": "Not closed"
+  },
+  "probesPage": {
+    "title": "Probe Nodes",
+    "createToken": "Create registration token",
+    "revoke": "Revoke",
+    "revokeTitle": "Revoke {name}?",
+    "revokeDescription": "The probe will no longer be able to authenticate or claim jobs. This cannot be undone from this screen.",
+    "empty": "No probe nodes registered yet",
+    "never": "Never",
+    "columns": {
+      "name": "Name",
+      "region": "Region / country",
+      "status": "Status",
+      "version": "Version",
+      "lastSeen": "Last seen",
+      "clockOffset": "Clock offset",
+      "registeredAt": "Registered"
+    },
+    "form": {
+      "title": "Create registration token",
+      "description": "Generates a one-time registration token a new probe agent uses to enroll. The token is shown only once.",
+      "name": "Name",
+      "regionCode": "Region code",
+      "countryCode": "Country code",
+      "networkName": "Network name (optional)",
+      "ttlHours": "Valid for (hours)",
+      "submit": "Create token"
+    },
+    "reveal": {
+      "title": "Registration token created",
+      "warning": "This token is shown once and cannot be retrieved again. Copy it now and store it securely.",
+      "tokenLabel": "Registration token",
+      "copy": "Copy",
+      "copied": "Copied",
+      "expiresAt": "Expires",
+      "done": "Done"
+    }
+  },
+  "probeStatus": {
+    "ONLINE": "Online",
+    "DEGRADED": "Degraded",
+    "OFFLINE": "Offline",
+    "REVOKED": "Revoked",
+    "UPGRADE_REQUIRED": "Upgrade required"
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "profile": {
+      "title": "Profile",
+      "readOnlyNotice": "Profile fields are read-only — the backend does not expose an endpoint to edit them from this UI.",
+      "email": "Email",
+      "displayName": "Display name",
+      "roles": "Roles",
+      "accountLocale": "Account locale"
+    },
+    "language": {
+      "title": "Language",
+      "description": "Choosing a language here only changes this browser's display preference.",
+      "supported": "Supported by the backend"
+    },
+    "system": {
+      "title": "System status",
+      "service": "Service",
+      "backendVersion": "Backend version",
+      "startedAt": "Started at",
+      "frontendVersion": "Frontend build version",
+      "readiness": "Readiness checks",
+      "unreachable": "Could not reach the system status endpoint"
+    },
+    "drive": {
+      "title": "Google Drive connection",
+      "connected": "Connected",
+      "notConnected": "Not connected",
+      "notConfigured": "Google Drive OAuth is not configured on this backend",
+      "manageLink": "Manage in Import Center"
+    }
+  },
+  "recommendations": {
+    "actions": {
+      "RENEW": "Renew",
+      "DROP": "Drop",
+      "REVIEW": "Needs review",
+      "PROFIT_OPPORTUNITY": "Profit opportunity"
+    }
+  },
+  "financeWarnings": {
+    "TAX_POLICY_UNKNOWN": "Tax policy is unknown for some domains",
+    "FX_RATE_MISSING_OR_STALE": "An exchange rate is missing or too old for some currencies",
+    "INVALID_COST_RECORD": "Some cost records are invalid",
+    "PURCHASE_TOTAL_INCOMPLETE": "The purchase cost total is incomplete"
+  },
+  "forbidden": {
+    "title": "Permission denied",
+    "description": "You are signed in, but do not have permission to perform this action.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "systemUnavailable": {
+    "title": "System temporarily unavailable",
+    "description": "Could not reach the authentication service. Please try again shortly.",
+    "retry": "Retry"
+  },
+  "readiness": {
+    "label": "System status",
+    "checking": "Checking...",
+    "ready": "All systems operational",
+    "degraded": "Partial outage",
+    "unreachable": "Unable to reach the system"
+  },
+  "errors": {
+    "unexpectedTitle": "Something went wrong",
+    "unexpectedDescription": "Please try again. If the problem persists, contact an administrator with the request ID below.",
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you are looking for may have moved or does not exist.",
+    "backHome": "Back home"
+  },
+  "domainStatus": {
+    "availability": {
+      "ACTIVE": "Active",
+      "UNAVAILABLE": "Unavailable",
+      "DEGRADED": "Degraded",
+      "UNKNOWN": "Unknown"
+    },
+    "dns": {
+      "OK": "OK",
+      "NXDOMAIN": "NXDOMAIN",
+      "SERVFAIL": "SERVFAIL",
+      "REFUSED": "Refused",
+      "TIMEOUT": "Timeout",
+      "NETWORK_ERROR": "Network error",
+      "DISCREPANCY": "Discrepancy",
+      "UNKNOWN": "Unknown"
+    },
+    "http": {
+      "OK": "OK",
+      "REDIRECT": "Redirect",
+      "CLIENT_ERROR": "Client error",
+      "SERVER_ERROR": "Server error",
+      "TIMEOUT": "Timeout",
+      "CONNECTION_ERROR": "Connection error",
+      "UNKNOWN": "Unknown"
+    },
+    "redirect": {
+      "NONE": "No redirect",
+      "TEMPORARY": "Temporary",
+      "PERMANENT": "Permanent",
+      "LOOP": "Redirect loop",
+      "INVALID": "Invalid",
+      "HTTPS_DOWNGRADE": "HTTPS downgrade",
+      "UNKNOWN": "Unknown"
+    },
+    "isp": {
+      "NOT_DETECTED": "Not detected",
+      "SUSPECTED": "Suspected block",
+      "HIGH_CONFIDENCE_BLOCK": "Confirmed block",
+      "UNKNOWN": "Unknown"
+    },
+    "tls": {
+      "VALID": "Valid",
+      "EXPIRING": "Expiring soon",
+      "EXPIRED": "Expired",
+      "HOSTNAME_MISMATCH": "Hostname mismatch",
+      "INVALID": "Invalid",
+      "ERROR": "Error",
+      "NOT_APPLICABLE": "Not applicable",
+      "UNKNOWN": "Unknown"
+    },
+    "lifecycle": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "archived": "Archived"
+    },
+    "source": {
+      "present": "Present",
+      "missing_from_source": "Missing from source",
+      "unknown": "Unknown"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "critical": "Critical"
+    }
+  },
+  "domains": {
+    "title": "Domains",
+    "addDomain": "Add domain",
+    "searchPlaceholder": "Search domain...",
+    "filterLifecycle": "Lifecycle status",
+    "filterSource": "Source status",
+    "allOption": "All",
+    "columns": {
+      "domain": "Domain",
+      "lifecycle": "Lifecycle",
+      "source": "Source",
+      "availability": "Availability",
+      "confidence": "Confidence",
+      "http": "HTTP",
+      "redirect": "Redirect",
+      "isp": "ISP",
+      "tls": "TLS",
+      "priority": "Priority",
+      "expiry": "Expiry",
+      "lastChecked": "Last checked"
+    },
+    "empty": "No domains match the current filters",
+    "emptyNoData": "No domains have been added yet",
+    "expiresIn": "{days, plural, =0 {Expires today} one {Expires in # day} other {Expires in # days}}",
+    "expired": "Expired {days, plural, one {# day} other {# days}} ago",
+    "noExpiration": "No expiration date",
+    "neverChecked": "Never checked",
+    "registrarId": "Registrar ID",
+    "noRegistrar": "No registrar on file",
+    "form": {
+      "title": "Add domain",
+      "description": "Registers a new domain for monitoring. The backend will normalize and validate it.",
+      "domainLabel": "Domain",
+      "domainPlaceholder": "example.com",
+      "domainRequired": "Enter a domain",
+      "businessPriorityLabel": "Business priority",
+      "expectedContentModeLabel": "Expected content mode",
+      "monitoringEnabledLabel": "Enable monitoring",
+      "expirationLabel": "Expiration date (optional)",
+      "notesLabel": "Notes",
+      "submit": "Add domain"
+    },
+    "actions": {
+      "archive": "Archive",
+      "restore": "Restore",
+      "archiveTitle": "Archive this domain?",
+      "archiveDescription": "The domain stops being monitored but all evidence and history are kept. This can be reversed with Restore.",
+      "restoreTitle": "Restore this domain?",
+      "restoreDescription": "The domain returns to active lifecycle status."
+    },
+    "conflict": {
+      "title": "This record changed",
+      "description": "Someone else updated this domain since you loaded it. Reload to see the latest version before trying again."
+    }
+  },
+  "domainDetail": {
+    "backToDomains": "Back to domains",
+    "notFound": "Domain not found",
+    "tabs": {
+      "overview": "Overview",
+      "monitoring": "Monitoring",
+      "rdap": "RDAP",
+      "finance": "Finance",
+      "overrides": "Overrides",
+      "recommendation": "Recommendation",
+      "provenance": "Provenance"
+    },
+    "overview": {
+      "effectiveStateTitle": "Current effective state",
+      "effectiveStateDescription": "Computed from multi-signal evidence with hysteresis — not a single request's result.",
+      "detailsTitle": "Domain details",
+      "originalInput": "Original input",
+      "registrableDomain": "Registrable domain",
+      "notes": "Notes",
+      "noNotes": "No notes",
+      "editButton": "Edit",
+      "consecutiveFailures": "Consecutive failures",
+      "consecutiveSuccesses": "Consecutive successes",
+      "failureStage": "Failure stage",
+      "errorCode": "Error code",
+      "confidence": "Confidence",
+      "contentMode": "Content mode",
+      "monitoringLabel": "Monitoring",
+      "created": "Created"
+    },
+    "edit": {
+      "title": "Edit domain",
+      "description": "Uses optimistic concurrency — if this record changed elsewhere since you loaded it, the save is rejected so you never silently overwrite someone else's change.",
+      "submit": "Save changes"
+    },
+    "actions": {
+      "manualCheck": "Run check now",
+      "manualCheckRunning": "Check running...",
+      "manualCheckAccepted": "Check accepted, waiting for results..."
+    },
+    "monitoring": {
+      "runsTitle": "Monitoring runs",
+      "historyTitle": "History",
+      "window": "Window",
+      "window24h": "24 hours",
+      "window7d": "7 days",
+      "window30d": "30 days",
+      "window90d": "90 days",
+      "uptimePercentage": "Uptime",
+      "monitoringCoverage": "Monitoring coverage",
+      "incidentCount": "Incidents",
+      "statusChangeCount": "Status changes",
+      "averageResponseMs": "Average response time",
+      "insufficientData": "Not enough evidence yet",
+      "timelineTitle": "Status change timeline",
+      "noTimelineEntries": "No status changes in this window",
+      "noRuns": "No monitoring runs yet",
+      "runDetailTitle": "Run detail",
+      "dnsChecksTitle": "DNS checks",
+      "httpChecksTitle": "HTTP checks",
+      "rawRun": "Raw run",
+      "rawResult": "Raw result",
+      "rawDnsCheck": "Raw DNS check",
+      "rawHttpCheck": "Raw HTTP check",
+      "vantage": "Vantage",
+      "redirectChainTitle": "Redirect chain",
+      "noRedirects": "No redirects recorded",
+      "tlsTitle": "TLS",
+      "statusLabel": "Status",
+      "triggerLabel": "Trigger",
+      "scheduledLabel": "Scheduled",
+      "policyLabel": "Policy version"
+    },
+    "rdap": {
+      "title": "RDAP registration data",
+      "forceCheck": "Force RDAP check",
+      "registrar": "Registrar",
+      "registrarIana": "Registrar IANA ID",
+      "nameservers": "Nameservers",
+      "dnssec": "DNSSEC",
+      "registrationAt": "Registered",
+      "expirationAt": "Expires",
+      "updatedAt": "Last updated at registry",
+      "statuses": "Statuses",
+      "notFound": "No RDAP result yet for this domain",
+      "conflictsTitle": "Provenance conflicts",
+      "noConflicts": "No conflicts detected",
+      "cached": "Cached result",
+      "bootstrapStale": "Bootstrap data is stale"
+    },
+    "finance": {
+      "title": "Costs",
+      "addCost": "Add cost",
+      "noCosts": "No cost records yet",
+      "form": {
+        "title": "Add domain cost",
+        "costType": "Cost type",
+        "amount": "Amount",
+        "currency": "Currency",
+        "taxRate": "Tax rate (0–1, optional)",
+        "taxMode": "Tax mode",
+        "billingCycleMonths": "Billing cycle (months)",
+        "effectiveFrom": "Effective from",
+        "sourceReference": "Source reference",
+        "submit": "Add cost"
+      }
+    },
+    "overrides": {
+      "title": "Manual overrides",
+      "create": "Create override",
+      "revoke": "Revoke",
+      "noOverrides": "No overrides on record",
+      "active": "Active",
+      "revoked": "Revoked",
+      "revokeTitle": "Revoke this override?",
+      "revokeDescription": "The field reverts to its normal computed/source value.",
+      "form": {
+        "title": "Create manual override",
+        "field": "Field",
+        "value": "Override value",
+        "expiresAt": "Expires at (optional)",
+        "submit": "Create override"
+      }
+    },
+    "recommendation": {
+      "title": "Recommendation",
+      "generate": "Generate recommendation",
+      "notGenerated": "No recommendation generated yet",
+      "generatedAction": "Generated action",
+      "effectiveAction": "Effective action",
+      "opportunityLevel": "Opportunity level",
+      "confidence": "Confidence",
+      "policyVersion": "Policy version",
+      "reasonsTitle": "Reasons",
+      "evidenceTitle": "Evidence references",
+      "overrideBanner": "A manual override changes the effective action for this domain",
+      "overrideReason": "Override reason"
+    },
+    "provenance": {
+      "title": "Field provenance",
+      "noEntries": "No provenance recorded",
+      "field": "Field",
+      "source": "Source",
+      "value": "Value",
+      "observedAt": "Observed",
+      "current": "Current"
+    }
+  }
+}
