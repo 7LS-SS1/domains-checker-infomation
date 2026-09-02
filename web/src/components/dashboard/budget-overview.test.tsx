@@ -73,9 +73,9 @@ const completeSummary: FinanceSummary = {
 };
 
 describe("BudgetOverview", () => {
-  it("renders exact decimal amounts with thousands separators, never a float-coerced value", async () => {
+  it("renders amounts rounded to 2 decimals with thousands separators, never a float-coerced value", async () => {
     renderHarness(completeSummary);
-    expect(await screen.findByText("1,234,567.999999 THB")).toBeInTheDocument();
+    expect(await screen.findByText("1,234,568.00 THB")).toBeInTheDocument();
     expect(screen.getByText("Data complete")).toBeInTheDocument();
   });
 

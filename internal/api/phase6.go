@@ -90,6 +90,17 @@ func (s *Server) getReportSummary(w http.ResponseWriter, r *http.Request) {
 	writeData(w, http.StatusOK, result)
 }
 
+// getReportDashboard is a live, read-only view of the same chart- and
+// table-ready data a PDF report snapshot renders — used by the on-screen
+// visual report page. Unlike createReport, nothing is persisted here.
+func (s *Server) getReportDashboard(w http.ResponseWriter, r *http.Request) {
+	result, err := s.intelligence.Reports.Dashboard(r.Context(), r.URL.Query().Get("reporting_currency"))
+	if !s.handleReportError(w, r, err) {
+		return
+	}
+	writeData(w, http.StatusOK, result)
+}
+
 type reportRequest struct {
 	Format            string `json:"format"`
 	ReportingCurrency string `json:"reporting_currency"`
@@ -140,8 +151,12 @@ func (s *Server) downloadReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	extension := strings.ToLower(payload.Record.Format)
-	w.Header().Set("Content-Type", payload.ContentType+"; charset=utf-8")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=domain-summary-%s.%s", payload.Record.ID, extension))
+	contentType := payload.ContentType
+	if extension != "pdf" {
+		contentType += "; charset=utf-8"
+	}
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=domain-%s-%s.%s", payload.Record.ReportType, payload.Record.ID, extension))
 	w.Header().Set("X-Content-SHA256", payload.Record.SHA256)
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(payload.Content)

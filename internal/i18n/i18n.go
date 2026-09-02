@@ -38,6 +38,7 @@ var catalog = map[string]Translation{
 	"SESSION_CREATED":                  {TH: "เข้าสู่ระบบสำเร็จ", EN: "Signed in successfully."},
 	"SESSION_REVOKED":                  {TH: "ออกจากระบบแล้ว", EN: "Signed out successfully."},
 	"MONITOR_RUN_ACCEPTED":             {TH: "รับงานตรวจสอบโดเมนแล้ว", EN: "The domain monitoring run was accepted."},
+	"ISP_CHECK_ACCEPTED":               {TH: "รับคำขอบังคับตรวจสอบ ISP แล้ว", EN: "The forced ISP check was accepted."},
 	"MONITOR_RUN_NOT_FOUND":            {TH: "ไม่พบงานตรวจสอบ", EN: "The monitoring run was not found."},
 	"DOMAIN_INACTIVE":                  {TH: "โดเมนนี้ไม่ได้อยู่ในสถานะพร้อมตรวจสอบ", EN: "The domain is not active for monitoring."},
 	"IDEMPOTENCY_KEY_REQUIRED":         {TH: "ต้องระบุ Idempotency-Key ที่ถูกต้อง", EN: "A valid Idempotency-Key header is required."},

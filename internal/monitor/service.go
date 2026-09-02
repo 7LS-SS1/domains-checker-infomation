@@ -28,6 +28,22 @@ func NewService(pool *pgxpool.Pool, auditStore *audit.Store, cfg config.Config) 
 }
 
 func (s *Service) CreateManualRun(ctx context.Context, domainID, userID uuid.UUID, requestID, idempotencyKey string) (Run, bool, error) {
+	return s.createManualRun(ctx, domainID, userID, requestID, idempotencyKey, "DOMAIN_MANUAL_CHECK_REQUESTED")
+}
+
+// CreateManualISPCheckRun queues the same fresh local monitoring run as
+// CreateManualRun, tagged with a distinct audit action so operators can tell
+// a forced ISP re-check apart from a generic manual recheck. Remote-probe
+// dispatch itself needs no separate trigger here: the worker calls
+// probe.Service.DispatchPending immediately after this run completes, and
+// DispatchPending has no local-availability gate — any completed run with an
+// ONLINE probe in the required region gets a fresh remote-probe job, which is
+// what ultimately refreshes the domain's ISP classification.
+func (s *Service) CreateManualISPCheckRun(ctx context.Context, domainID, userID uuid.UUID, requestID, idempotencyKey string) (Run, bool, error) {
+	return s.createManualRun(ctx, domainID, userID, requestID, idempotencyKey, "DOMAIN_ISP_CHECK_FORCED")
+}
+
+func (s *Service) createManualRun(ctx context.Context, domainID, userID uuid.UUID, requestID, idempotencyKey, auditAction string) (Run, bool, error) {
 	idempotencyKey = strings.TrimSpace(idempotencyKey)
 	if idempotencyKey == "" || len(idempotencyKey) > 200 {
 		return Run{}, false, ErrInvalidIdempotencyKey
@@ -74,7 +90,7 @@ func (s *Service) CreateManualRun(ctx context.Context, domainID, userID uuid.UUI
 			return Run{}, false, err
 		}
 		if err := s.audit.AppendTx(ctx, tx, audit.Entry{
-			ActorUserID: &userID, Action: "DOMAIN_MANUAL_CHECK_REQUESTED", ResourceType: "monitoring_run",
+			ActorUserID: &userID, Action: auditAction, ResourceType: "monitoring_run",
 			ResourceID: &runID, RequestID: requestID, Metadata: map[string]any{"domain_id": domainID, "domain": domainASCII},
 		}); err != nil {
 			return Run{}, false, err

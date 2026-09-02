@@ -16,6 +16,7 @@ import (
 	"domainmonitor/internal/observability"
 	"domainmonitor/internal/platform/postgres"
 	"domainmonitor/internal/platform/rediscache"
+	"domainmonitor/internal/probe"
 	"domainmonitor/internal/protocolcheck"
 	"domainmonitor/internal/queue"
 	"github.com/google/uuid"
@@ -50,8 +51,10 @@ func main() {
 	defer protocols.CloseIdleConnections()
 
 	workerID := "worker-" + uuid.NewString()
-	service := monitor.NewService(pool, audit.NewStore(), cfg)
+	auditStore := audit.NewStore()
+	service := monitor.NewService(pool, auditStore, cfg)
 	engine := monitor.NewEngine(service, protocols, workerID)
+	probeService := probe.NewService(pool, auditStore, cfg)
 	consumer := queue.NewConsumer(redisClient, cfg.OutboxStream, cfg.MonitorQueueGroup, workerID,
 		cfg.MonitorWorkers, cfg.MonitorQueueLease, cfg.MonitorQueueBlock,
 		func(err error) { logger.Error("monitor_job_failed", "worker_id", workerID, "error", err) })
@@ -76,6 +79,14 @@ func main() {
 			return err
 		}
 		logger.InfoContext(ctx, "monitor_run_completed", "worker_id", workerID, "monitor_run_id", runID)
+		// Dispatch remote-probe (ISP) jobs right away instead of waiting for the
+		// next scheduler tick, so cross-vantage ISP evidence refreshes as soon as
+		// a local check completes — including forced ISP-check runs.
+		if count, err := probeService.DispatchPending(ctx); err != nil {
+			logger.ErrorContext(ctx, "remote_probe_dispatch_after_run_failed", "worker_id", workerID, "monitor_run_id", runID, "error", err)
+		} else if count > 0 {
+			logger.InfoContext(ctx, "remote_probe_jobs_dispatched_after_run", "worker_id", workerID, "monitor_run_id", runID, "count", count)
+		}
 		return nil
 	})
 	if err != nil && ctx.Err() == nil {

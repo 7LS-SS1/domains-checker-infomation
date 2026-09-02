@@ -291,8 +291,24 @@
   },
   "reportsPage": {
     "title": "Reports",
-    "summaryTitle": "Summary",
     "createReport": "Create report",
+    "dashboard": {
+      "kpiTitle": "Domain overview",
+      "availabilityTitle": "Availability status",
+      "ispTitle": "ISP status",
+      "trendTitle": "Incidents opened per day (last 30 days)",
+      "trendSeriesName": "Incidents opened",
+      "topDomainsTitle": "Domains needing attention (top 10)",
+      "topDomainsEmpty": "No domains currently need attention.",
+      "columns": {
+        "domain": "Domain",
+        "availability": "Availability",
+        "isp": "ISP status",
+        "recommendation": "Recommendation",
+        "renewalCost": "Renewal cost",
+        "noRenewalCost": "—"
+      }
+    },
     "form": {
       "title": "Create report",
       "format": "Format",
@@ -308,7 +324,7 @@
     "requestedAt": "Requested",
     "download": "Download",
     "warningsTitle": "Completeness warnings",
-    "noPdfXlsx": "JSON and CSV only — the backend does not support PDF or XLSX export."
+    "noXlsx": "JSON, CSV, and PDF are supported — the backend does not support XLSX export."
   },
   "incidentsPage": {
     "title": "Incidents",
@@ -410,7 +426,8 @@
       "RENEW": "Renew",
       "DROP": "Drop",
       "REVIEW": "Needs review",
-      "PROFIT_OPPORTUNITY": "Profit opportunity"
+      "PROFIT_OPPORTUNITY": "Profit opportunity",
+      "UNKNOWN": "No recommendation yet"
     }
   },
   "financeWarnings": {
@@ -637,7 +654,10 @@
     "actions": {
       "manualCheck": "Run check now",
       "manualCheckRunning": "Check running...",
-      "manualCheckAccepted": "Check accepted, waiting for results..."
+      "manualCheckAccepted": "Check accepted, waiting for results...",
+      "forceIspCheck": "Force ISP check",
+      "forceIspCheckRunning": "ISP check running...",
+      "forceIspCheckAccepted": "Forced ISP check accepted, waiting for results..."
     },
     "monitoring": {
       "runsTitle": "Monitoring runs",

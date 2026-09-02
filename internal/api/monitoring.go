@@ -45,6 +45,37 @@ func (s *Server) createManualCheck(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (s *Server) createISPCheck(w http.ResponseWriter, r *http.Request) {
+	domainID, ok := parseDomainID(w, r)
+	if !ok {
+		return
+	}
+	principal, _ := auth.PrincipalFromContext(r.Context())
+	run, created, err := s.monitors.CreateManualISPCheckRun(
+		r.Context(), domainID, principal.UserID, RequestID(r.Context()), r.Header.Get("Idempotency-Key"),
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, monitor.ErrInvalidIdempotencyKey):
+			writeError(w, r, http.StatusUnprocessableEntity, "IDEMPOTENCY_KEY_REQUIRED", map[string]any{"header": "Idempotency-Key", "max_length": 200})
+		case errors.Is(err, monitor.ErrDomainNotFound):
+			writeError(w, r, http.StatusNotFound, "DOMAIN_NOT_FOUND", nil)
+		case errors.Is(err, monitor.ErrDomainInactive):
+			writeError(w, r, http.StatusConflict, "DOMAIN_INACTIVE", nil)
+		default:
+			s.logger.ErrorContext(r.Context(), "isp_check_run_failed", "domain_id", domainID, "request_id", RequestID(r.Context()), "error", err)
+			writeError(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", nil)
+		}
+		return
+	}
+	w.Header().Set("Location", "/api/v1/monitoring-runs/"+run.ID.String())
+	writeData(w, http.StatusAccepted, map[string]any{
+		"run": run, "created": created,
+		"message":  i18n.Message("ISP_CHECK_ACCEPTED", i18n.FromContext(r.Context(), i18n.Thai)),
+		"messages": i18n.Messages("ISP_CHECK_ACCEPTED"),
+	})
+}
+
 func (s *Server) getMonitoringRun(w http.ResponseWriter, r *http.Request) {
 	runID, err := uuid.Parse(chi.URLParam(r, "runID"))
 	if err != nil {

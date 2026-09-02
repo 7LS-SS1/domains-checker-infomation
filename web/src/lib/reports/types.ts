@@ -47,4 +47,38 @@ export const reportRecordSchema = z.object({
 
 export type ReportRecord = z.infer<typeof reportRecordSchema>;
 
-export const REPORT_FORMATS = ["json", "csv"] as const;
+export const REPORT_FORMATS = ["json", "csv", "pdf"] as const;
+
+/** Mirrors internal/report/service.go's StatusCount struct. */
+export const statusCountSchema = z.object({
+  status: z.string(),
+  count: z.number().int(),
+});
+export type StatusCount = z.infer<typeof statusCountSchema>;
+
+/** Mirrors internal/report/service.go's DailyCount struct. */
+export const dailyCountSchema = z.object({
+  date: z.string(),
+  count: z.number().int(),
+});
+export type DailyCount = z.infer<typeof dailyCountSchema>;
+
+/** Mirrors internal/report/service.go's TopDomain struct. */
+export const topDomainSchema = z.object({
+  domain: z.string(),
+  availability_status: z.string(),
+  isp_status: z.string(),
+  recommendation: z.string(),
+  renewal_cost: z.string().nullish(),
+  renewal_cost_currency: z.string().nullish(),
+});
+export type TopDomain = z.infer<typeof topDomainSchema>;
+
+/** Mirrors internal/report/service.go's Dashboard struct (Summary + charts). */
+export const reportDashboardSchema = reportSummarySchema.extend({
+  availability_distribution: z.array(statusCountSchema),
+  isp_distribution: z.array(statusCountSchema),
+  incident_trend_30d: z.array(dailyCountSchema),
+  top_domains: z.array(topDomainSchema),
+});
+export type ReportDashboard = z.infer<typeof reportDashboardSchema>;

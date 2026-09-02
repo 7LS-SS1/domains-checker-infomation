@@ -9,27 +9,22 @@ import { Download, FileText, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ErrorState } from "@/components/ui/error-state";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DateValue } from "@/components/ui/date-value";
-import { MoneyValue } from "@/components/ui/money-value";
 import { CurrencySelector } from "@/components/dashboard/currency-selector";
+import { ReportDashboard } from "@/components/reports/report-dashboard";
 import { ApiError } from "@/lib/api/envelope";
-import { describeQueryError } from "@/lib/api/query-error";
-import { useCreateReport, useReportSummary } from "@/lib/reports/queries";
+import { useCreateReport, useReportDashboard } from "@/lib/reports/queries";
 import { REPORT_FORMATS, type ReportRecord } from "@/lib/reports/types";
 import { hasCapability, toKnownRoles } from "@/lib/auth/capability";
 
 export function ReportsPageContent({ roles }: { roles: readonly string[] }) {
   const t = useTranslations("reportsPage");
   const tCommon = useTranslations("common");
-  const tKpi = useTranslations("dashboard.kpi");
-  const tFinance = useTranslations("financePage");
   const [reportingCurrency, setReportingCurrency] = useState("THB");
   const [sessionReports, setSessionReports] = useState<ReportRecord[]>([]);
 
-  const summaryQuery = useReportSummary(reportingCurrency);
+  const dashboardQuery = useReportDashboard(reportingCurrency);
   const createReport = useCreateReport();
   const canCreate = hasCapability(toKnownRoles(roles), "createReport");
 
@@ -56,54 +51,12 @@ export function ReportsPageContent({ roles }: { roles: readonly string[] }) {
         <CurrencySelector value={reportingCurrency} onChange={setReportingCurrency} />
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("summaryTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {summaryQuery.isError ? (
-            <ErrorState
-              title={tCommon("loadError")}
-              description={describeQueryError(summaryQuery.error).message}
-              requestId={describeQueryError(summaryQuery.error).requestId}
-              onRetry={() => summaryQuery.refetch()}
-            />
-          ) : summaryQuery.isPending ? (
-            <Skeleton className="h-24 w-full" />
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label={tKpi("totalDomains")} value={String(summaryQuery.data.total_domains)} />
-              <Stat
-                label={tKpi("activeDomains")}
-                value={String(summaryQuery.data.active_domains)}
-              />
-              <Stat
-                label={tFinance("renewalCost")}
-                value={
-                  <MoneyValue
-                    amount={summaryQuery.data.renewal_cost}
-                    currency={summaryQuery.data.reporting_currency}
-                  />
-                }
-              />
-              <Stat
-                label={tFinance("annualBudget")}
-                value={
-                  <MoneyValue
-                    amount={summaryQuery.data.annual_budget}
-                    currency={summaryQuery.data.reporting_currency}
-                  />
-                }
-              />
-            </div>
-          )}
-          {summaryQuery.isSuccess && summaryQuery.data.completeness_warnings.length > 0 && (
-            <p className="mt-3 text-xs text-status-amber-fg">
-              {t("warningsTitle")}: {summaryQuery.data.completeness_warnings.join(", ")}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <ReportDashboard query={dashboardQuery} />
+      {dashboardQuery.isSuccess && dashboardQuery.data.completeness_warnings.length > 0 && (
+        <p className="text-xs text-status-amber-fg">
+          {t("warningsTitle")}: {dashboardQuery.data.completeness_warnings.join(", ")}
+        </p>
+      )}
 
       {canCreate && (
         <Card>
@@ -142,7 +95,7 @@ export function ReportsPageContent({ roles }: { roles: readonly string[] }) {
                 {t("form.submit")}
               </Button>
             </form>
-            <p className="mt-2 text-xs text-muted-foreground">{t("noPdfXlsx")}</p>
+            <p className="mt-2 text-xs text-muted-foreground">{t("noXlsx")}</p>
           </CardContent>
         </Card>
       )}
@@ -189,15 +142,6 @@ export function ReportsPageContent({ roles }: { roles: readonly string[] }) {
           )}
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div>
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="text-lg font-semibold tabular-nums text-foreground">{value}</p>
     </div>
   );
 }

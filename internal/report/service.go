@@ -54,6 +54,44 @@ type Summary struct {
 	RecommendationPolicy   string    `json:"recommendation_policy_version"`
 }
 
+// StatusCount is one segment of a distribution chart (e.g. how many domains
+// are ACTIVE vs UNAVAILABLE).
+type StatusCount struct {
+	Status string `json:"status"`
+	Count  int    `json:"count"`
+}
+
+// DailyCount is one point on the incident trend line — always a full,
+// gap-free run of consecutive days (zero-filled) so the chart never has to
+// guess at missing days.
+type DailyCount struct {
+	Date  string `json:"date"`
+	Count int    `json:"count"`
+}
+
+// TopDomain is one row of the "domains needing attention" table: the
+// highest-risk active domains, ranked by availability/ISP/recommendation
+// signals already computed elsewhere in the system.
+type TopDomain struct {
+	Domain              string  `json:"domain"`
+	AvailabilityStatus  string  `json:"availability_status"`
+	ISPStatus           string  `json:"isp_status"`
+	Recommendation      string  `json:"recommendation"`
+	RenewalCost         *string `json:"renewal_cost,omitempty"`
+	RenewalCostCurrency *string `json:"renewal_cost_currency,omitempty"`
+}
+
+// Dashboard extends Summary with the chart- and table-ready data behind the
+// visual report page and its PDF export: status distributions, a 30-day
+// incident trend, and a top-10 "needs attention" table.
+type Dashboard struct {
+	Summary
+	AvailabilityDistribution []StatusCount `json:"availability_distribution"`
+	ISPDistribution          []StatusCount `json:"isp_distribution"`
+	IncidentTrend30d         []DailyCount  `json:"incident_trend_30d"`
+	TopDomains                []TopDomain   `json:"top_domains"`
+}
+
 type Record struct {
 	ID                   uuid.UUID       `json:"id"`
 	ReportType           string          `json:"report_type"`
@@ -125,6 +163,130 @@ func (s *Service) Summary(ctx context.Context, currency string) (Summary, error)
 	return result, err
 }
 
+// Dashboard computes the same KPI snapshot as Summary plus the chart- and
+// table-ready data behind the visual report page: status distributions, a
+// zero-filled 30-day incident trend, and a top-10 "needs attention" table.
+// Read-only and uncached — safe to call from a live view or a PDF export.
+func (s *Service) Dashboard(ctx context.Context, currency string) (Dashboard, error) {
+	summary, err := s.Summary(ctx, currency)
+	if err != nil {
+		return Dashboard{}, err
+	}
+	dashboard := Dashboard{Summary: summary, AvailabilityDistribution: []StatusCount{}, ISPDistribution: []StatusCount{}, IncidentTrend30d: []DailyCount{}, TopDomains: []TopDomain{}}
+
+	availabilityRows, err := s.pool.Query(ctx, `
+		SELECT current_availability_status::text, count(*)::int
+		FROM domains WHERE lifecycle_status <> 'archived'
+		GROUP BY current_availability_status ORDER BY count(*) DESC
+	`)
+	if err != nil {
+		return Dashboard{}, fmt.Errorf("query availability distribution: %w", err)
+	}
+	for availabilityRows.Next() {
+		var item StatusCount
+		if err := availabilityRows.Scan(&item.Status, &item.Count); err != nil {
+			availabilityRows.Close()
+			return Dashboard{}, fmt.Errorf("scan availability distribution: %w", err)
+		}
+		dashboard.AvailabilityDistribution = append(dashboard.AvailabilityDistribution, item)
+	}
+	if err := availabilityRows.Err(); err != nil {
+		return Dashboard{}, err
+	}
+
+	ispRows, err := s.pool.Query(ctx, `
+		SELECT current_isp_status::text, count(*)::int
+		FROM domains WHERE lifecycle_status <> 'archived'
+		GROUP BY current_isp_status ORDER BY count(*) DESC
+	`)
+	if err != nil {
+		return Dashboard{}, fmt.Errorf("query isp distribution: %w", err)
+	}
+	for ispRows.Next() {
+		var item StatusCount
+		if err := ispRows.Scan(&item.Status, &item.Count); err != nil {
+			ispRows.Close()
+			return Dashboard{}, fmt.Errorf("scan isp distribution: %w", err)
+		}
+		dashboard.ISPDistribution = append(dashboard.ISPDistribution, item)
+	}
+	if err := ispRows.Err(); err != nil {
+		return Dashboard{}, err
+	}
+
+	trendRows, err := s.pool.Query(ctx, `
+		SELECT day.value::date, COALESCE(opened.count, 0)::int
+		FROM generate_series(current_date - interval '29 days', current_date, interval '1 day') AS day(value)
+		LEFT JOIN (
+			SELECT date_trunc('day', opened_at)::date AS day, count(*)::int AS count
+			FROM incidents WHERE opened_at >= now() - interval '30 days'
+			GROUP BY day
+		) opened ON opened.day = day.value::date
+		ORDER BY day.value
+	`)
+	if err != nil {
+		return Dashboard{}, fmt.Errorf("query incident trend: %w", err)
+	}
+	for trendRows.Next() {
+		var item DailyCount
+		var day time.Time
+		if err := trendRows.Scan(&day, &item.Count); err != nil {
+			trendRows.Close()
+			return Dashboard{}, fmt.Errorf("scan incident trend: %w", err)
+		}
+		item.Date = day.Format("2006-01-02")
+		dashboard.IncidentTrend30d = append(dashboard.IncidentTrend30d, item)
+	}
+	if err := trendRows.Err(); err != nil {
+		return Dashboard{}, err
+	}
+
+	topRows, err := s.pool.Query(ctx, `
+		WITH latest AS (
+			SELECT DISTINCT ON (domain_id) domain_id, action::text, opportunity_level::text
+			FROM recommendations ORDER BY domain_id, generated_at DESC, created_at DESC
+		), effective AS (
+			SELECT l.domain_id, COALESCE(o.override_value #>> '{}', l.action) action, l.opportunity_level
+			FROM latest l LEFT JOIN LATERAL (
+				SELECT override_value FROM manual_overrides WHERE domain_id=l.domain_id AND field_name='recommendation' AND revoked_at IS NULL AND effective_from<=now() AND (expires_at IS NULL OR expires_at>now()) ORDER BY effective_from DESC LIMIT 1
+			) o ON true
+		), renewal_cost AS (
+			SELECT DISTINCT ON (domain_id) domain_id, amount, currency_code
+			FROM domain_costs
+			WHERE cost_type = 'renewal' AND effective_from <= current_date AND (effective_to IS NULL OR effective_to >= current_date)
+			ORDER BY domain_id, CASE price_source WHEN 'registrar_api' THEN 1 WHEN 'google_sheet' THEN 2 WHEN 'manual' THEN 3 ELSE 4 END, effective_from DESC, created_at DESC
+		)
+		SELECT d.domain_ascii, d.current_availability_status::text, d.current_isp_status::text,
+		       COALESCE(e.action, 'UNKNOWN'), rc.amount::text, rc.currency_code::text,
+		       (CASE WHEN d.current_availability_status <> 'ACTIVE' THEN 2 ELSE 0 END +
+		        CASE WHEN d.current_isp_status IN ('SUSPECTED','HIGH_CONFIDENCE_BLOCK') THEN 2 ELSE 0 END +
+		        CASE WHEN e.action IN ('DROP','REVIEW') THEN 1 ELSE 0 END) AS risk_score
+		FROM domains d
+		LEFT JOIN effective e ON e.domain_id = d.id
+		LEFT JOIN renewal_cost rc ON rc.domain_id = d.id
+		WHERE d.lifecycle_status = 'active'
+		ORDER BY risk_score DESC, rc.amount DESC NULLS LAST, d.domain_ascii
+		LIMIT 10
+	`)
+	if err != nil {
+		return Dashboard{}, fmt.Errorf("query top domains: %w", err)
+	}
+	for topRows.Next() {
+		var item TopDomain
+		var riskScore int
+		if err := topRows.Scan(&item.Domain, &item.AvailabilityStatus, &item.ISPStatus, &item.Recommendation, &item.RenewalCost, &item.RenewalCostCurrency, &riskScore); err != nil {
+			topRows.Close()
+			return Dashboard{}, fmt.Errorf("scan top domains: %w", err)
+		}
+		dashboard.TopDomains = append(dashboard.TopDomains, item)
+	}
+	if err := topRows.Err(); err != nil {
+		return Dashboard{}, err
+	}
+
+	return dashboard, nil
+}
+
 func (s *Service) Create(ctx context.Context, actor Actor, idempotencyKey, format, currency string) (Record, error) {
 	idempotencyKey = strings.TrimSpace(idempotencyKey)
 	if len(idempotencyKey) < 8 || len(idempotencyKey) > 200 {
@@ -134,36 +296,64 @@ func (s *Service) Create(ctx context.Context, actor Actor, idempotencyKey, forma
 		return existing, nil
 	}
 	format = strings.ToLower(strings.TrimSpace(format))
-	if format != "json" && format != "csv" {
+	if format != "json" && format != "csv" && format != "pdf" {
 		return Record{}, fmt.Errorf("%w: format", ErrValidation)
 	}
-	summary, err := s.Summary(ctx, currency)
-	if err != nil {
-		return Record{}, err
+	var (
+		content              []byte
+		contentType          string
+		generatedAt          time.Time
+		reportingCurrency    string
+		completenessWarnings []string
+		policyVersion        string
+	)
+	if format == "pdf" {
+		dashboard, err := s.Dashboard(ctx, currency)
+		if err != nil {
+			return Record{}, err
+		}
+		content, err = renderDashboardPDF(dashboard)
+		if err != nil {
+			return Record{}, err
+		}
+		contentType = "application/pdf"
+		generatedAt, reportingCurrency = dashboard.GeneratedAt, dashboard.ReportingCurrency
+		completenessWarnings, policyVersion = dashboard.CompletenessWarnings, dashboard.RecommendationPolicy
+	} else {
+		summary, err := s.Summary(ctx, currency)
+		if err != nil {
+			return Record{}, err
+		}
+		content, contentType, err = render(summary, format)
+		if err != nil {
+			return Record{}, err
+		}
+		generatedAt, reportingCurrency = summary.GeneratedAt, summary.ReportingCurrency
+		completenessWarnings, policyVersion = summary.CompletenessWarnings, summary.RecommendationPolicy
 	}
-	content, contentType, err := render(summary, format)
-	if err != nil {
-		return Record{}, err
+	reportType := "summary"
+	if format == "pdf" {
+		reportType = "dashboard"
 	}
 	digest := sha256.Sum256(content)
-	warnings, _ := json.Marshal(summary.CompletenessWarnings)
-	policy, _ := json.Marshal(map[string]string{"recommendation": summary.RecommendationPolicy})
-	filters, _ := json.Marshal(map[string]string{"reporting_currency": summary.ReportingCurrency})
+	warnings, _ := json.Marshal(completenessWarnings)
+	policy, _ := json.Marshal(map[string]string{"recommendation": policyVersion})
+	filters, _ := json.Marshal(map[string]string{"reporting_currency": reportingCurrency})
 	now := s.now().UTC()
-	record := Record{ID: uuid.New(), ReportType: "summary", Format: format, Status: "completed", Filters: filters, SnapshotAt: summary.GeneratedAt, PolicyVersions: policy, CompletenessWarnings: summary.CompletenessWarnings, RowCount: 1, StorageReference: "database:report_payloads", SHA256: hex.EncodeToString(digest[:]), RequestedBy: actor.UserID, RequestedAt: now, CompletedAt: &now}
+	record := Record{ID: uuid.New(), ReportType: reportType, Format: format, Status: "completed", Filters: filters, SnapshotAt: generatedAt, PolicyVersions: policy, CompletenessWarnings: completenessWarnings, RowCount: 1, StorageReference: "database:report_payloads", SHA256: hex.EncodeToString(digest[:]), RequestedBy: actor.UserID, RequestedAt: now, CompletedAt: &now}
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return Record{}, err
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
-	_, err = tx.Exec(ctx, `INSERT INTO reports (id,report_type,format,status,filters,snapshot_at,policy_versions,exchange_rate_snapshot,completeness_warnings,row_count,storage_reference,file_sha256,requested_by,requested_at,completed_at,idempotency_key) VALUES ($1,'summary',$2,'completed',$3::jsonb,$4,$5::jsonb,'{}'::jsonb,$6::jsonb,1,$7,$8,$9,$10,$10,$11)`, record.ID, format, filters, record.SnapshotAt, policy, warnings, record.StorageReference, digest[:], actor.UserID, now, idempotencyKey)
+	_, err = tx.Exec(ctx, `INSERT INTO reports (id,report_type,format,status,filters,snapshot_at,policy_versions,exchange_rate_snapshot,completeness_warnings,row_count,storage_reference,file_sha256,requested_by,requested_at,completed_at,idempotency_key) VALUES ($1,$2,$3,'completed',$4::jsonb,$5,$6::jsonb,'{}'::jsonb,$7::jsonb,1,$8,$9,$10,$11,$11,$12)`, record.ID, reportType, format, filters, record.SnapshotAt, policy, warnings, record.StorageReference, digest[:], actor.UserID, now, idempotencyKey)
 	if err != nil {
 		return Record{}, err
 	}
 	if _, err := tx.Exec(ctx, `INSERT INTO report_payloads (report_id,content_type,content) VALUES ($1,$2,$3)`, record.ID, contentType, content); err != nil {
 		return Record{}, err
 	}
-	if err := s.audit.AppendTx(ctx, tx, audit.Entry{ActorUserID: &actor.UserID, Action: "REPORT_GENERATED", ResourceType: "report", ResourceID: &record.ID, RequestID: actor.RequestID, After: map[string]any{"type": "summary", "format": format, "sha256": record.SHA256, "row_count": 1}}); err != nil {
+	if err := s.audit.AppendTx(ctx, tx, audit.Entry{ActorUserID: &actor.UserID, Action: "REPORT_GENERATED", ResourceType: "report", ResourceID: &record.ID, RequestID: actor.RequestID, After: map[string]any{"type": reportType, "format": format, "sha256": record.SHA256, "row_count": 1}}); err != nil {
 		return Record{}, err
 	}
 	if err := tx.Commit(ctx); err != nil {

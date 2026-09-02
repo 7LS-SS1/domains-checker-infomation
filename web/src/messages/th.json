@@ -291,8 +291,24 @@
   },
   "reportsPage": {
     "title": "รายงาน",
-    "summaryTitle": "สรุปภาพรวม",
     "createReport": "สร้างรายงาน",
+    "dashboard": {
+      "kpiTitle": "ภาพรวมโดเมน",
+      "availabilityTitle": "สถานะความพร้อมใช้งาน",
+      "ispTitle": "สถานะ ISP",
+      "trendTitle": "Incident ที่เปิดใหม่ต่อวัน (30 วันล่าสุด)",
+      "trendSeriesName": "Incident ที่เปิดใหม่",
+      "topDomainsTitle": "โดเมนที่ควรให้ความสนใจ (Top 10)",
+      "topDomainsEmpty": "ขณะนี้ไม่มีโดเมนที่ต้องให้ความสนใจ",
+      "columns": {
+        "domain": "โดเมน",
+        "availability": "ความพร้อมใช้งาน",
+        "isp": "สถานะ ISP",
+        "recommendation": "คำแนะนำ",
+        "renewalCost": "ค่าต่ออายุ",
+        "noRenewalCost": "—"
+      }
+    },
     "form": {
       "title": "สร้างรายงาน",
       "format": "รูปแบบไฟล์",
@@ -308,7 +324,7 @@
     "requestedAt": "ร้องขอเมื่อ",
     "download": "ดาวน์โหลด",
     "warningsTitle": "คำเตือนความครบถ้วนของข้อมูล",
-    "noPdfXlsx": "รองรับเฉพาะ JSON และ CSV เท่านั้น เนื่องจากระบบหลังบ้านยังไม่รองรับ PDF หรือ XLSX"
+    "noXlsx": "รองรับ JSON, CSV และ PDF — ระบบหลังบ้านยังไม่รองรับ XLSX"
   },
   "incidentsPage": {
     "title": "Incident",
@@ -410,7 +426,8 @@
       "RENEW": "ต่ออายุ",
       "DROP": "ยกเลิก",
       "REVIEW": "ต้องทบทวน",
-      "PROFIT_OPPORTUNITY": "โอกาสทำกำไร"
+      "PROFIT_OPPORTUNITY": "โอกาสทำกำไร",
+      "UNKNOWN": "ยังไม่มีคำแนะนำ"
     }
   },
   "financeWarnings": {
@@ -637,7 +654,10 @@
     "actions": {
       "manualCheck": "ตรวจสอบตอนนี้",
       "manualCheckRunning": "กำลังตรวจสอบ...",
-      "manualCheckAccepted": "รับคำขอตรวจสอบแล้ว กำลังรอผล..."
+      "manualCheckAccepted": "รับคำขอตรวจสอบแล้ว กำลังรอผล...",
+      "forceIspCheck": "บังคับตรวจสอบ ISP",
+      "forceIspCheckRunning": "กำลังตรวจสอบ ISP...",
+      "forceIspCheckAccepted": "รับคำขอบังคับตรวจสอบ ISP แล้ว กำลังรอผล..."
     },
     "monitoring": {
       "runsTitle": "รายการตรวจสอบ",

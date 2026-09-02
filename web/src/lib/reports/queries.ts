@@ -4,8 +4,10 @@ import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tan
 import { useLocale } from "next-intl";
 import { bffFetch } from "@/lib/api/client";
 import {
+  reportDashboardSchema,
   reportRecordSchema,
   reportSummarySchema,
+  type ReportDashboard,
   type ReportRecord,
   type ReportSummary,
 } from "@/lib/reports/types";
@@ -23,6 +25,19 @@ export function useReportSummary(reportingCurrency: string): UseQueryResult<Repo
   });
 }
 
+export function useReportDashboard(reportingCurrency: string): UseQueryResult<ReportDashboard> {
+  const locale = useLocale();
+  return useQuery({
+    queryKey: ["report-dashboard", reportingCurrency],
+    queryFn: () =>
+      bffFetch(
+        `/api/bff/reports/dashboard?reporting_currency=${encodeURIComponent(reportingCurrency)}`,
+        reportDashboardSchema,
+        { locale },
+      ),
+  });
+}
+
 export function useReport(reportId: string | undefined): UseQueryResult<ReportRecord> {
   const locale = useLocale();
   return useQuery({
@@ -33,7 +48,7 @@ export function useReport(reportId: string | undefined): UseQueryResult<ReportRe
 }
 
 export interface CreateReportInput {
-  format: "json" | "csv";
+  format: "json" | "csv" | "pdf";
   reporting_currency: string;
 }
 

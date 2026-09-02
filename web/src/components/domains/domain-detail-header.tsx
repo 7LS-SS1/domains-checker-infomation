@@ -3,13 +3,18 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Loader2, Pencil, Play } from "lucide-react";
+import { Loader2, Pencil, Play, Radar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DomainStatusBadge } from "@/components/domains/domain-status-badge";
 import { EditDomainDialog } from "@/components/domains/edit-domain-dialog";
 import { ApiError } from "@/lib/api/envelope";
-import { useArchiveDomain, useManualCheck, useRestoreDomain } from "@/lib/domains/mutations";
+import {
+  useArchiveDomain,
+  useForceISPCheck,
+  useManualCheck,
+  useRestoreDomain,
+} from "@/lib/domains/mutations";
 import { hasCapability, toKnownRoles } from "@/lib/auth/capability";
 import type { Domain } from "@/lib/domains/types";
 
@@ -29,6 +34,7 @@ export function DomainDetailHeader({
   const archive = useArchiveDomain();
   const restore = useRestoreDomain();
   const manualCheck = useManualCheck();
+  const forceIspCheck = useForceISPCheck();
 
   const knownRoles = toKnownRoles(roles);
   const canEdit = hasCapability(knownRoles, "editDomains");
@@ -40,6 +46,15 @@ export function DomainDetailHeader({
   function handleManualCheck() {
     manualCheck.mutate(domain.id, {
       onSuccess: () => toast.success(t("actions.manualCheckAccepted")),
+      onError: (error) => {
+        toast.error(error instanceof ApiError ? error.message : tCommon("loadError"));
+      },
+    });
+  }
+
+  function handleForceIspCheck() {
+    forceIspCheck.mutate(domain.id, {
+      onSuccess: () => toast.success(t("actions.forceIspCheckAccepted")),
       onError: (error) => {
         toast.error(error instanceof ApiError ? error.message : tCommon("loadError"));
       },
@@ -76,6 +91,21 @@ export function DomainDetailHeader({
                 <Play size={14} aria-hidden />
               )}
               {manualCheck.isPending ? t("actions.manualCheckRunning") : t("actions.manualCheck")}
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleForceIspCheck}
+              disabled={forceIspCheck.isPending || domain.lifecycle_status !== "active"}
+            >
+              {forceIspCheck.isPending ? (
+                <Loader2 size={14} className="animate-spin" aria-hidden />
+              ) : (
+                <Radar size={14} aria-hidden />
+              )}
+              {forceIspCheck.isPending
+                ? t("actions.forceIspCheckRunning")
+                : t("actions.forceIspCheck")}
             </Button>
             <Button
               variant={isArchived ? "secondary" : "destructive"}

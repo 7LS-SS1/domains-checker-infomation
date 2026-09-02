@@ -36,4 +36,33 @@ describe("formatDecimalString (exact-money rendering, no Number()/parseFloat)", 
     expect(value).not.toContain("Infinity");
     expect(value).toBe("1,000,000,000,000,000,000,000.5");
   });
+
+  describe("with a decimals option (rounds via BigInt, still no Number()/parseFloat)", () => {
+    it("pads short fractional parts", () => {
+      expect(formatDecimalString("0", { decimals: 2 })).toBe("0.00");
+      expect(formatDecimalString("1234567.1", { decimals: 2 })).toBe("1,234,567.10");
+    });
+
+    it("rounds down when the next digit is below 5", () => {
+      expect(formatDecimalString("0.001234", { decimals: 2 })).toBe("0.00");
+      expect(formatDecimalString("1234567.994999", { decimals: 2 })).toBe("1,234,567.99");
+    });
+
+    it("rounds up when the next digit is 5 or above", () => {
+      expect(formatDecimalString("1234567.995999", { decimals: 2 })).toBe("1,234,568.00");
+    });
+
+    it("carries a rounding cascade through the integer part", () => {
+      expect(formatDecimalString("999.999", { decimals: 2 })).toBe("1,000.00");
+    });
+
+    it("preserves exactness for huge values beyond Number.MAX_SAFE_INTEGER", () => {
+      const huge = "90071992547409999999.995";
+      expect(formatDecimalString(huge, { decimals: 2 })).toBe("90,071,992,547,410,000,000.00");
+    });
+
+    it("handles negative amounts", () => {
+      expect(formatDecimalString("-1234.567", { decimals: 2 })).toBe("-1,234.57");
+    });
+  });
 });

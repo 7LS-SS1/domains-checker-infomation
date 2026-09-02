@@ -33,6 +33,29 @@ export function useManualCheck() {
   });
 }
 
+/**
+ * Forces a fresh local check plus an immediate remote-probe dispatch (the
+ * worker triggers probe dispatch right after the run completes) so the
+ * domain's cross-vantage ISP status refreshes without waiting on the regular
+ * schedule. Distinct endpoint from useManualCheck so the audit trail records
+ * it as an explicit ISP-check request.
+ */
+export function useForceISPCheck() {
+  const locale = useLocale();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (domainId: string) =>
+      bffFetch(`/api/bff/domains/${domainId}/isp-check`, manualCheckResponseSchema, {
+        method: "POST",
+        locale,
+        headers: { "Idempotency-Key": crypto.randomUUID() },
+      }),
+    onSuccess: (_data, domainId) => {
+      void queryClient.invalidateQueries({ queryKey: ["domain", domainId, "monitoring-runs"] });
+    },
+  });
+}
+
 export interface CreateDomainInput {
   domain: string;
   registrar_id?: string | null;

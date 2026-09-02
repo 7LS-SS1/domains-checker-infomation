@@ -80,6 +80,11 @@ export const BFF_ROUTES: readonly BffRoute[] = [
     methods: { GET: readOnly(["reporting_currency"]) },
   },
   {
+    pattern: ["reports", "dashboard"],
+    backendPath: () => "/api/v1/reports/dashboard",
+    methods: { GET: readOnly(["reporting_currency"]) },
+  },
+  {
     pattern: ["finance", "summary"],
     backendPath: () => "/api/v1/finance/summary",
     methods: { GET: readOnly(["reporting_currency"]) },
@@ -217,6 +222,11 @@ export const BFF_ROUTES: readonly BffRoute[] = [
   {
     pattern: ["domains", ":domainId", "check"],
     backendPath: (p) => `/api/v1/domains/${p.domainId}/check`,
+    methods: { POST: mutating({ forwardsIdempotencyKey: true, forwardsBody: false }) },
+  },
+  {
+    pattern: ["domains", ":domainId", "isp-check"],
+    backendPath: (p) => `/api/v1/domains/${p.domainId}/isp-check`,
     methods: { POST: mutating({ forwardsIdempotencyKey: true, forwardsBody: false }) },
   },
   {
