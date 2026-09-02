@@ -82,6 +82,12 @@ export function RunDetailPanel({ runId, pollWhileActive, onBack }: RunDetailPane
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {(result.vantage_country || result.vantage_network) && (
+                  <p className="text-sm text-muted-foreground">
+                    {t("networkScope")}:{" "}
+                    {[result.vantage_country, result.vantage_network].filter(Boolean).join(" · ")}
+                  </p>
+                )}
                 <div className="flex flex-wrap gap-1.5">
                   <DomainStatusBadge dimension="availability" value={result.availability_status} />
                   <DomainStatusBadge dimension="dns" value={result.dns_status} />
@@ -92,6 +98,22 @@ export function RunDetailPanel({ runId, pollWhileActive, onBack }: RunDetailPane
                 </div>
                 {result.error_message && (
                   <p className="text-sm text-status-rose-fg">{result.error_message}</p>
+                )}
+                {(result.failure_stage || result.error_code) && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("failureEvidence")}:{" "}
+                    {[result.failure_stage, result.error_code].filter(Boolean).join(" · ")}
+                  </p>
+                )}
+                {result.reason_codes.length > 0 && (
+                  <div className="rounded-md border border-border bg-muted/30 p-2 text-sm">
+                    <p className="font-medium text-foreground">{t("restrictionEvidence")}</p>
+                    <ul className="mt-1 list-disc pl-5 text-xs text-muted-foreground">
+                      {result.reason_codes.map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
                 <JsonViewer data={result} label={t("rawResult")} />
               </CardContent>

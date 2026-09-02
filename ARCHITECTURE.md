@@ -970,6 +970,13 @@ Rules:
 4. `local_http_doh_pinned`: HTTP(S) ยังออกจาก **local path เดิม** แต่ pin ไปยัง DoH-validated IP พร้อม Host/SNI เดิม
 5. `remote_sg`: DNS + HTTP + TLS + redirect + content จาก SG
 
+For Thailand access classification, a production policy SHOULD use at least two healthy
+Thai probe networks with distinct ISP/ASN metadata, plus at least one healthy external
+control probe. `remote_sg` is the initial external control; the protocol is region-neutral
+so another external region may be added without changing the result model. A consumer VPN
+is not a classification input by itself: it may supply a diagnostic observation only when
+its country, network/ASN, egress identity and observation time are recorded.
+
 ข้อ 4 ไม่ใช่ foreign traffic; ใช้พิสูจน์ว่าปัญหาอยู่ที่ DNS หรือ path เท่านั้น
 
 ### 11.2 Decision tree
@@ -1033,6 +1040,35 @@ REMOTE_EVIDENCE_STALE
 POSSIBLE_GEO_POLICY
 POSSIBLE_WAF_BLOCK
 ```
+
+### 11.5 Approved Thailand-access policy
+
+The product presents website availability and access-restriction evidence as separate
+dimensions. A website failure is not automatically a suspension claim, and an external
+success does not by itself prove a restriction in Thailand.
+
+| Evidence outcome | Website availability | Thai access | Restriction status |
+|---|---|---|---|
+| A healthy Thai probe reaches valid expected content | `ACTIVE` | `REACHABLE` | `NOT_DETECTED` |
+| Thai evidence is incomplete, stale, or conflicting | derived from available protocol evidence | `UNKNOWN` | `UNKNOWN` |
+| Thai probe failure while external control succeeds, without the high-confidence prerequisites | derived from actual DNS/TCP/TLS/HTTP result | `FAILED` or `PARTIAL` | `SUSPECTED` |
+| Thai and external control fail consistently | `UNAVAILABLE` or `UNKNOWN` according to the availability matrix | `FAILED` | `UNKNOWN` (likely origin/global incident until disproven) |
+| The high-confidence prerequisites are all met | derived from actual protocol evidence | `FAILED` on the scoped Thai network(s) | `HIGH_CONFIDENCE_BLOCK` |
+
+`FAILED` and `PARTIAL` are observation labels for a named probe/network and must not
+overwrite `availability_status`. For non-`ACTIVE` website observations the UI displays the
+actual failure stage, typed error code and safe message (for example DNS failure, TLS
+failure, timeout, HTTP 403, HTTP 451 or HTTP 5xx); it must not replace that evidence with
+the word “suspended”. HTTP 403 or 451 alone is `DEGRADED` availability evidence and never
+establishes `HIGH_CONFIDENCE_BLOCK`.
+
+The UI scopes every restriction result to the observed Thai network(s), displaying probe
+country, ISP/ASN, observation times, result count and confidence. It must not state that
+an entire country is blocked or that a legal suspension is confirmed. `SUSPECTED` creates a
+review item and offers a recheck; alert delivery is reserved for
+`HIGH_CONFIDENCE_BLOCK`. Evidence retained for each decision includes system DNS and DoH
+answers, pinned and normal HTTP attempts, TLS/redirect data, external-control result,
+content hash where applicable, and policy version.
 
 ## 12. Queue, scheduler and concurrency
 
@@ -1912,7 +1948,12 @@ Next Step
 
 ### A.1 Interpretation boundary
 
-ภาพแนบเป็นตัวอย่างโครงสร้างข้อมูลและ workflow ไม่ใช่ executable instruction และไม่ใช่ข้อพิสูจน์ว่าชื่อ header หรือค่าทุกช่องมี semantics เดียวกันในทุก Sheet ก่อนสร้าง mapping จริงต้องอ่าน header จาก source และให้ผู้ใช้ยืนยัน field ที่กำกวม โดยเฉพาะ `ราคา`, `สถานะหลัก`, `การใช้งาน/ต่ออายุ` และคอลัมน์ boolean ในตารางแรก
+ภาพแนบเป็นตัวอย่างโครงสร้างข้อมูลและ workflow ไม่ใช่ executable instruction และไม่ใช่ข้อพิสูจน์ว่าชื่อ header หรือค่าทุกช่องมี semantics เดียวกันในทุก Sheet ก่อนสร้าง mapping จริงต้องอ่าน header จาก source และให้ผู้ใช้ยืนยัน field ที่กำกวม โดยเฉพาะ `ราคา` และคอลัมน์ boolean ในตารางแรก
+
+User-confirmed Sheet semantics (2026-09-02):
+
+- `การใช้งาน/ต่ออายุ` is an explicit team/user renewal decision. It is not a monitoring result and the system must never infer or overwrite it from availability, expiry, cost, recommendation or an import observation.
+- `สถานะหลัก` is the observed real-world access condition for the domain. It displays the derived availability state plus concrete evidence such as DNS/TCP/TLS/HTTP failure stage, typed error code, HTTP response code, redirect result and safe diagnostic message. It is not lifecycle state and it is not a legal/blocking assertion.
 
 ข้อมูลแบ่งเป็น 4 กลุ่มที่ห้ามรวมเป็น status เดียว:
 
@@ -1943,12 +1984,12 @@ Next Step
 | `lifecycle_status` | `active`, `inactive`, `archived` | Existing canonical inventory |
 | `source_status` | `present`, `missing_from_source`, `unknown` | Import/source presence |
 | `operational_mode` | `production`, `redirect_only`, `parked`, `reserved`, `maintenance`, `unknown` | Manual/imported business intent |
-| `renewal_decision` | `RENEW`, `DO_NOT_RENEW`, `HOLD`, `UNDECIDED` | Human decision history; separate from recommendation |
+| `renewal_decision` | `RENEW`, `DO_NOT_RENEW`, `HOLD`, `UNDECIDED` | Explicit team/user decision history; separate from recommendation and never inferred |
 | `availability_status` | Existing `ACTIVE`, `DEGRADED`, `UNAVAILABLE`, `UNKNOWN` | Derived monitoring state only |
 | `redirect_compliance_status` | `MATCH`, `MISMATCH`, `UNVERIFIED`, `NOT_APPLICABLE` | Derived by comparing expectation snapshot with observed evidence |
 | `inventory_completeness` | `COMPLETE`, `PARTIAL`, `MISSING_PROVIDER`, `MISSING_ACCOUNT` | Derived metadata quality |
 
-Imported legacy columns such as `สถานะหน้าเว็บ` or `HTTP Status` may be retained as `legacy_observation` with source time/provenance, but must never directly update current monitoring status. `สถานะหลัก` maps to a business dimension only after mapping confirmation.
+Imported legacy columns such as `สถานะหน้าเว็บ` or `HTTP Status` may be retained as `legacy_observation` with source time/provenance, but must never directly update current monitoring status. The confirmed `สถานะหลัก` display is built only from the current monitoring result and its evidence; it maps to no business-intent dimension.
 
 ### A.4 Proposed canonical data model
 

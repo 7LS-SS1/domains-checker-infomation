@@ -16,6 +16,13 @@ const domainColumns = `
 	id, original_input, domain_ascii, domain_unicode, registrable_domain, registrar_id,
 	lifecycle_status::text, source_status::text, source_type, business_priority::text,
 	monitoring_enabled, expected_content_mode, expiration_at, notes,
+	COALESCE((SELECT decision FROM domain_renewal_decisions WHERE domain_id = domains.id ORDER BY created_at DESC, id DESC LIMIT 1), 'UNDECIDED'),
+	COALESCE((SELECT reason FROM domain_renewal_decisions WHERE domain_id = domains.id ORDER BY created_at DESC, id DESC LIMIT 1), ''),
+	(SELECT created_at FROM domain_renewal_decisions WHERE domain_id = domains.id ORDER BY created_at DESC, id DESC LIMIT 1),
+	(SELECT amount::text FROM domain_costs WHERE domain_id = domains.id AND cost_type = 'renewal' AND effective_from <= current_date AND (effective_to IS NULL OR effective_to >= current_date) ORDER BY CASE price_source WHEN 'registrar_api' THEN 1 WHEN 'google_sheet' THEN 2 WHEN 'manual' THEN 3 ELSE 4 END, effective_from DESC, created_at DESC LIMIT 1),
+	(SELECT currency_code::text FROM domain_costs WHERE domain_id = domains.id AND cost_type = 'renewal' AND effective_from <= current_date AND (effective_to IS NULL OR effective_to >= current_date) ORDER BY CASE price_source WHEN 'registrar_api' THEN 1 WHEN 'google_sheet' THEN 2 WHEN 'manual' THEN 3 ELSE 4 END, effective_from DESC, created_at DESC LIMIT 1),
+	(SELECT http.effective_url FROM http_checks http JOIN monitoring_results result ON result.id = http.monitoring_result_id WHERE result.domain_id = domains.id AND http.effective_url IS NOT NULL ORDER BY http.checked_at DESC, http.id DESC LIMIT 1),
+	(SELECT final_http_status_code FROM monitoring_results WHERE domain_id = domains.id AND final_http_status_code IS NOT NULL ORDER BY checked_at DESC, id DESC LIMIT 1),
 	current_availability_status::text, current_dns_status::text, current_http_status::text,
 	current_redirect_status::text, current_isp_status::text, current_tls_status::text,
 	current_content_status::text, current_confidence_score,
@@ -219,6 +226,19 @@ func (s *Store) UpdateTx(ctx context.Context, tx pgx.Tx, item Domain, expectedVe
 	return updated, nil
 }
 
+func (s *Store) InsertRenewalDecisionTx(ctx context.Context, tx pgx.Tx, domainID uuid.UUID, decision, reason string, actorID uuid.UUID) error {
+	var previousID *uuid.UUID
+	err := tx.QueryRow(ctx, `SELECT id FROM domain_renewal_decisions WHERE domain_id = $1 ORDER BY created_at DESC, id DESC LIMIT 1`, domainID).Scan(&previousID)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return fmt.Errorf("load previous renewal decision: %w", err)
+	}
+	_, err = tx.Exec(ctx, `INSERT INTO domain_renewal_decisions (domain_id, decision, reason, decided_by, supersedes_id) VALUES ($1, $2, $3, $4, $5)`, domainID, strings.ToUpper(strings.TrimSpace(decision)), strings.TrimSpace(reason), actorID, previousID)
+	if err != nil {
+		return fmt.Errorf("insert renewal decision: %w", err)
+	}
+	return nil
+}
+
 func (s *Store) ArchiveTx(ctx context.Context, tx pgx.Tx, id uuid.UUID, version int64) (Domain, error) {
 	return scanDomain(tx.QueryRow(ctx, `
 		UPDATE domains SET
@@ -252,6 +272,8 @@ func scanDomain(row rowScanner) (Domain, error) {
 		&item.ID, &item.OriginalInput, &item.ASCII, &item.Unicode, &item.RegistrableDomain, &item.RegistrarID,
 		&item.LifecycleStatus, &item.SourceStatus, &item.SourceType, &item.BusinessPriority,
 		&item.MonitoringEnabled, &item.ExpectedContentMode, &item.ExpirationAt, &item.Notes,
+		&item.RenewalDecision, &item.RenewalDecisionReason, &item.RenewalDecidedAt,
+		&item.RenewalPrice, &item.RenewalCurrency, &item.RedirectTargetURL, &item.LatestHTTPCode,
 		&item.AvailabilityStatus, &item.DNSStatus, &item.HTTPStatus, &item.RedirectStatus,
 		&item.ISPStatus, &item.TLSStatus, &item.ContentStatus, &item.ConfidenceScore,
 		&item.ConsecutiveFailures, &item.ConsecutiveSuccesses, &item.CurrentFailureStage, &item.CurrentErrorCode,

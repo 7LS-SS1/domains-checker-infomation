@@ -16,6 +16,13 @@ export const domainSchema = z.object({
   expected_content_mode: z.string(),
   expiration_at: z.string().nullish(),
   notes: z.string(),
+  renewal_decision: z.string().default("UNDECIDED"),
+  renewal_decision_reason: z.string().default(""),
+  renewal_decided_at: z.string().nullish(),
+  renewal_price: z.string().nullish(),
+  renewal_currency: z.string().nullish(),
+  redirect_target_url: z.string().nullish(),
+  latest_http_status_code: z.number().int().nullish(),
   availability_status: z.string(),
   dns_status: z.string(),
   http_status: z.string(),
@@ -112,3 +119,4 @@ export const TLS_STATUSES = [
   "NOT_APPLICABLE",
   "UNKNOWN",
 ] as const;
+export const RENEWAL_DECISIONS = ["RENEW", "DO_NOT_RENEW", "HOLD", "UNDECIDED"] as const;

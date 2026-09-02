@@ -71,7 +71,7 @@
       "activeDomains": "Active",
       "unavailableDomains": "Unavailable",
       "permanentRedirects": "Permanent redirects",
-      "suspectedIspBlock": "Suspected ISP block",
+      "suspectedIspBlock": "Suspected access restriction",
       "highConfidenceIspBlock": "Confirmed ISP block",
       "dnsErrors": "DNS errors",
       "tlsErrors": "TLS errors",
@@ -480,8 +480,8 @@
     },
     "isp": {
       "NOT_DETECTED": "Not detected",
-      "SUSPECTED": "Suspected block",
-      "HIGH_CONFIDENCE_BLOCK": "Confirmed block",
+      "SUSPECTED": "Suspected access restriction",
+      "HIGH_CONFIDENCE_BLOCK": "High-confidence restriction (observed network)",
       "UNKNOWN": "Unknown"
     },
     "tls": {
@@ -520,6 +520,10 @@
     "allOption": "All",
     "columns": {
       "domain": "Domain",
+      "price": "Renewal price",
+      "renewalDecision": "Renewal decision",
+      "mainStatus": "Main status",
+      "detailsReason": "Details / reason",
       "lifecycle": "Lifecycle",
       "source": "Source",
       "availability": "Availability",
@@ -530,7 +534,25 @@
       "tls": "TLS",
       "priority": "Priority",
       "expiry": "Expiry",
-      "lastChecked": "Last checked"
+      "lastChecked": "Last checked",
+      "redirectTarget": "Redirect target"
+    },
+    "renewalDecision": {
+      "RENEW": "Renew",
+      "DO_NOT_RENEW": "Do not renew",
+      "HOLD": "On hold",
+      "UNDECIDED": "Undecided"
+    },
+    "ispSummary": {
+      "normal": "Normal",
+      "vpn": "VPN",
+      "unknown": "Unknown"
+    },
+    "domainState": {
+      "active": "Active",
+      "cancelled": "Cancelled",
+      "notUsed": "Not in use",
+      "checkProblem": "Unable to check"
     },
     "empty": "No domains match the current filters",
     "emptyNoData": "No domains have been added yet",
@@ -579,6 +601,17 @@
       "provenance": "Provenance"
     },
     "overview": {
+      "sheetSummaryTitle": "Summary at a glance",
+      "renewalDecision": "Renewal decision",
+      "renewalReason": "Decision reason",
+      "websiteStatus": "Website status",
+      "detailsReason": "Details / reason",
+      "mainStatus": "Main status",
+      "redirectTarget": "Redirect target",
+      "httpStatus": "HTTP Status",
+      "noData": "—",
+      "noCheckData": "No monitoring data yet",
+      "noErrorDetected": "No error detected",
       "effectiveStateTitle": "Current effective state",
       "effectiveStateDescription": "Computed from multi-signal evidence with hysteresis — not a single request's result.",
       "detailsTitle": "Domain details",
@@ -631,6 +664,9 @@
       "rawDnsCheck": "Raw DNS check",
       "rawHttpCheck": "Raw HTTP check",
       "vantage": "Vantage",
+      "networkScope": "Observed network scope",
+      "restrictionEvidence": "Access-restriction evidence",
+      "failureEvidence": "Failure stage and code",
       "redirectChainTitle": "Redirect chain",
       "noRedirects": "No redirects recorded",
       "tlsTitle": "TLS",

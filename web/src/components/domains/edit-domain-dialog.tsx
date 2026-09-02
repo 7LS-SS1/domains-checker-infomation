@@ -11,7 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api/envelope";
 import { usePatchDomain } from "@/lib/domains/mutations";
-import { BUSINESS_PRIORITIES, EXPECTED_CONTENT_MODES, type Domain } from "@/lib/domains/types";
+import {
+  BUSINESS_PRIORITIES,
+  EXPECTED_CONTENT_MODES,
+  RENEWAL_DECISIONS,
+  type Domain,
+} from "@/lib/domains/types";
 
 interface EditDomainDialogProps {
   open: boolean;
@@ -30,6 +35,7 @@ export function EditDomainDialog({ open, onOpenChange, domain }: EditDomainDialo
   const tCommon = useTranslations("common");
   const tStatus = useTranslations("domainStatus");
   const tForm = useTranslations("domains.form");
+  const tDomains = useTranslations("domains");
   const tConflict = useTranslations("domains.conflict");
   const patchDomain = usePatchDomain();
 
@@ -37,6 +43,7 @@ export function EditDomainDialog({ open, onOpenChange, domain }: EditDomainDialo
     business_priority: z.enum(BUSINESS_PRIORITIES),
     expected_content_mode: z.enum(EXPECTED_CONTENT_MODES),
     monitoring_enabled: z.boolean(),
+    renewal_decision: z.enum(RENEWAL_DECISIONS),
     notes: z.string(),
     reason: z.string().min(1, tCommon("reasonPlaceholder")),
   });
@@ -52,6 +59,7 @@ export function EditDomainDialog({ open, onOpenChange, domain }: EditDomainDialo
       business_priority: domain.business_priority as FormValues["business_priority"],
       expected_content_mode: domain.expected_content_mode as FormValues["expected_content_mode"],
       monitoring_enabled: domain.monitoring_enabled,
+      renewal_decision: domain.renewal_decision as FormValues["renewal_decision"],
       notes: domain.notes,
       reason: "",
     },
@@ -137,6 +145,21 @@ export function EditDomainDialog({ open, onOpenChange, domain }: EditDomainDialo
             <Label htmlFor="edit_monitoring_enabled" className="font-normal">
               {tForm("monitoringEnabledLabel")}
             </Label>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="edit_renewal_decision">{tDomains("columns.renewalDecision")}</Label>
+            <select
+              id="edit_renewal_decision"
+              className="h-10 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
+              {...register("renewal_decision")}
+            >
+              {RENEWAL_DECISIONS.map((decision) => (
+                <option key={decision} value={decision}>
+                  {tDomains(`renewalDecision.${decision}`)}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-1.5">

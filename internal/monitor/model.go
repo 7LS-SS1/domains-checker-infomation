@@ -67,6 +67,8 @@ type Result struct {
 	DomainID        uuid.UUID  `json:"domain_id"`
 	VantageType     string     `json:"vantage_type"`
 	VantageKey      string     `json:"vantage_key"`
+	VantageCountry  *string    `json:"vantage_country,omitempty"`
+	VantageNetwork  *string    `json:"vantage_network,omitempty"`
 	Availability    string     `json:"availability_status"`
 	DNS             string     `json:"dns_status"`
 	HTTP            string     `json:"http_status"`
@@ -82,6 +84,7 @@ type Result struct {
 	ErrorMessage    *string    `json:"error_message,omitempty"`
 	Confidence      int16      `json:"confidence_score"`
 	ConfidenceLevel string     `json:"confidence_level"`
+	ReasonCodes     []string   `json:"reason_codes"`
 	PolicyVersion   string     `json:"policy_version"`
 	CheckedAt       time.Time  `json:"checked_at"`
 	CompletedAt     *time.Time `json:"completed_at,omitempty"`

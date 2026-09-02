@@ -71,6 +71,7 @@ export interface PatchDomainInput {
   expiration_at?: string;
   clear_expiration?: boolean;
   notes?: string;
+  renewal_decision?: string;
   reason: string;
 }
 

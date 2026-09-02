@@ -71,7 +71,7 @@
       "activeDomains": "ใช้งานอยู่",
       "unavailableDomains": "ไม่พร้อมใช้งาน",
       "permanentRedirects": "เปลี่ยนเส้นทางถาวร",
-      "suspectedIspBlock": "ต้องสงสัยถูกบล็อก ISP",
+      "suspectedIspBlock": "พบสัญญาณการจำกัดการเข้าถึง",
       "highConfidenceIspBlock": "ยืนยันถูกบล็อก ISP",
       "dnsErrors": "ข้อผิดพลาด DNS",
       "tlsErrors": "ข้อผิดพลาด TLS",
@@ -480,8 +480,8 @@
     },
     "isp": {
       "NOT_DETECTED": "ไม่พบการบล็อก",
-      "SUSPECTED": "ต้องสงสัยถูกบล็อก",
-      "HIGH_CONFIDENCE_BLOCK": "ยืนยันถูกบล็อก",
+      "SUSPECTED": "สงสัยถูกจำกัดการเข้าถึง",
+      "HIGH_CONFIDENCE_BLOCK": "มีแนวโน้มสูงว่าถูกจำกัด (ตามเครือข่ายที่ตรวจ)",
       "UNKNOWN": "ไม่ทราบ"
     },
     "tls": {
@@ -520,6 +520,10 @@
     "allOption": "ทั้งหมด",
     "columns": {
       "domain": "โดเมน",
+      "price": "ราคาต่ออายุ",
+      "renewalDecision": "การใช้งาน/ต่ออายุ",
+      "mainStatus": "สถานะหลัก",
+      "detailsReason": "รายละเอียด/เหตุผล",
       "lifecycle": "วงจรชีวิต",
       "source": "แหล่งข้อมูล",
       "availability": "สถานะใช้งาน",
@@ -530,7 +534,25 @@
       "tls": "TLS",
       "priority": "ความสำคัญ",
       "expiry": "วันหมดอายุ",
-      "lastChecked": "ตรวจล่าสุด"
+      "lastChecked": "ตรวจล่าสุด",
+      "redirectTarget": "ลิงก์ปลายทาง (Redirect)"
+    },
+    "renewalDecision": {
+      "RENEW": "ต่ออายุ",
+      "DO_NOT_RENEW": "ไม่ต่ออายุ",
+      "HOLD": "พักการตัดสินใจ",
+      "UNDECIDED": "ยังไม่ตัดสินใจ"
+    },
+    "ispSummary": {
+      "normal": "ปกติ",
+      "vpn": "VPN",
+      "unknown": "ไม่ทราบ"
+    },
+    "domainState": {
+      "active": "ใช้งาน",
+      "cancelled": "ยกเลิก",
+      "notUsed": "ยังไม่ได้ใช้งาน",
+      "checkProblem": "มีปัญหาตรวจสอบไม่ได้"
     },
     "empty": "ไม่พบโดเมนที่ตรงกับตัวกรองปัจจุบัน",
     "emptyNoData": "ยังไม่มีการเพิ่มโดเมนใดๆ",
@@ -579,6 +601,17 @@
       "provenance": "แหล่งที่มาข้อมูล"
     },
     "overview": {
+      "sheetSummaryTitle": "ข้อมูลสรุปในที่เดียว",
+      "renewalDecision": "การใช้งาน/ต่ออายุ",
+      "renewalReason": "เหตุผลการตัดสินใจ",
+      "websiteStatus": "สถานะหน้าเว็บ",
+      "detailsReason": "รายละเอียด/เหตุผล",
+      "mainStatus": "สถานะหลัก",
+      "redirectTarget": "ลิงก์ปลายทาง (Redirect)",
+      "httpStatus": "HTTP Status",
+      "noData": "—",
+      "noCheckData": "ยังไม่มีข้อมูลการตรวจสอบ",
+      "noErrorDetected": "ไม่พบข้อผิดพลาด",
       "effectiveStateTitle": "สถานะปัจจุบันที่มีผล",
       "effectiveStateDescription": "คำนวณจากหลักฐานหลายแหล่งพร้อมกลไก hysteresis ไม่ใช่ผลจากการตรวจครั้งเดียว",
       "detailsTitle": "รายละเอียดโดเมน",
@@ -631,6 +664,9 @@
       "rawDnsCheck": "ข้อมูลดิบของ DNS",
       "rawHttpCheck": "ข้อมูลดิบของ HTTP",
       "vantage": "จุดสังเกตการณ์",
+      "networkScope": "ขอบเขตเครือข่ายที่ตรวจ",
+      "restrictionEvidence": "หลักฐานประกอบสถานะการจำกัดการเข้าถึง",
+      "failureEvidence": "จุดและรหัสความล้มเหลว",
       "redirectChainTitle": "ลำดับการเปลี่ยนเส้นทาง",
       "noRedirects": "ไม่มีการเปลี่ยนเส้นทางที่บันทึกไว้",
       "tlsTitle": "TLS",

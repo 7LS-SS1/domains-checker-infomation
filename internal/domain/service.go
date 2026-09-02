@@ -162,9 +162,25 @@ func (s *Service) Patch(ctx context.Context, actor Actor, id uuid.UUID, input Pa
 	if input.Notes != nil {
 		after.Notes = strings.TrimSpace(*input.Notes)
 	}
+	renewalDecisionChanged := false
+	if input.RenewalDecision != nil {
+		if err := validateRenewalDecision(*input.RenewalDecision); err != nil {
+			return Domain{}, err
+		}
+		renewalDecisionChanged = strings.ToUpper(strings.TrimSpace(*input.RenewalDecision)) != before.RenewalDecision
+	}
 	updated, err := s.store.UpdateTx(ctx, tx, after, input.Version)
 	if err != nil {
 		return Domain{}, err
+	}
+	if renewalDecisionChanged {
+		if err := s.store.InsertRenewalDecisionTx(ctx, tx, updated.ID, *input.RenewalDecision, input.Reason, actor.UserID); err != nil {
+			return Domain{}, err
+		}
+		updated, err = s.store.GetTx(ctx, tx, updated.ID)
+		if err != nil {
+			return Domain{}, err
+		}
 	}
 	if err := s.store.EnsureScheduleTx(ctx, tx, updated.ID, updated.MonitoringEnabled && updated.LifecycleStatus == "active"); err != nil {
 		return Domain{}, err
@@ -276,5 +292,14 @@ func validateContentMode(value string) (string, error) {
 		return value, nil
 	default:
 		return "", &ValidationError{Field: "expected_content_mode", ReasonCode: "INVALID_CONTENT_MODE", Reason: "must be HTML, ANY, or STATUS_ONLY"}
+	}
+}
+
+func validateRenewalDecision(value string) error {
+	switch strings.ToUpper(strings.TrimSpace(value)) {
+	case "RENEW", "DO_NOT_RENEW", "HOLD", "UNDECIDED":
+		return nil
+	default:
+		return &ValidationError{Field: "renewal_decision", ReasonCode: "INVALID_RENEWAL_DECISION", Reason: "must be RENEW, DO_NOT_RENEW, HOLD, or UNDECIDED"}
 	}
 }

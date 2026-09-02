@@ -399,6 +399,7 @@ type patchDomainRequest struct {
 	ExpirationAt        *string `json:"expiration_at"`
 	ClearExpiration     bool    `json:"clear_expiration"`
 	Notes               *string `json:"notes"`
+	RenewalDecision     *string `json:"renewal_decision"`
 	Reason              string  `json:"reason"`
 }
 
@@ -431,6 +432,7 @@ func (s *Server) patchDomain(w http.ResponseWriter, r *http.Request) {
 		ExpirationAt:        expirationAt,
 		ClearExpiration:     request.ClearExpiration,
 		Notes:               request.Notes,
+		RenewalDecision:     request.RenewalDecision,
 		Reason:              request.Reason,
 	})
 	if !s.handleDomainError(w, r, err) {

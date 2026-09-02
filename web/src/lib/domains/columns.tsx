@@ -5,6 +5,11 @@ import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { DomainStatusBadge } from "@/components/domains/domain-status-badge";
+import {
+  ConfidenceRing,
+  DomainLifecycleDot,
+  DomainListIspBadge,
+} from "@/components/domains/domain-list-indicators";
 import { DateValue } from "@/components/ui/date-value";
 import type { Domain } from "@/lib/domains/types";
 
@@ -41,26 +46,44 @@ export function useDomainColumns() {
           const domain = info.row.original;
           const isIdn = domain.domain_unicode && domain.domain_unicode !== domain.domain_ascii;
           return (
-            <Link
-              href={`/domains/${domain.id}`}
-              className="font-medium text-foreground hover:underline"
-            >
-              {isIdn ? (
-                <span>
-                  {domain.domain_unicode}{" "}
-                  <span className="text-xs text-muted-foreground">({domain.domain_ascii})</span>
-                </span>
-              ) : (
-                domain.domain_ascii
-              )}
-            </Link>
+            <div className="flex items-center gap-2">
+              <DomainLifecycleDot domain={domain} />
+              <Link
+                href={`/domains/${domain.id}`}
+                className="font-medium text-foreground hover:underline"
+              >
+                {isIdn ? (
+                  <span>
+                    {domain.domain_unicode}{" "}
+                    <span className="text-xs text-muted-foreground">({domain.domain_ascii})</span>
+                  </span>
+                ) : (
+                  domain.domain_ascii
+                )}
+              </Link>
+            </div>
           );
         },
       }),
-      columnHelper.accessor("lifecycle_status", {
-        id: "lifecycle_status",
-        header: t("columns.lifecycle"),
-        cell: (info) => <DomainStatusBadge dimension="lifecycle" value={info.getValue()} />,
+      columnHelper.accessor("renewal_price", {
+        id: "renewal_price",
+        header: t("columns.price"),
+        cell: (info) => {
+          const amount = info.getValue();
+          const currency = info.row.original.renewal_currency;
+          return amount && currency ? (
+            <span className="tabular-nums">
+              {amount} {currency}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          );
+        },
+      }),
+      columnHelper.accessor("renewal_decision", {
+        id: "renewal_decision",
+        header: t("columns.renewalDecision"),
+        cell: (info) => <span>{t(`renewalDecision.${info.getValue()}`)}</span>,
       }),
       columnHelper.accessor("source_status", {
         id: "source_status",
@@ -68,14 +91,24 @@ export function useDomainColumns() {
         cell: (info) => <DomainStatusBadge dimension="source" value={info.getValue()} />,
       }),
       columnHelper.accessor("availability_status", {
-        id: "availability_status",
-        header: t("columns.availability"),
-        cell: (info) => <DomainStatusBadge dimension="availability" value={info.getValue()} />,
+        id: "main_status",
+        header: t("columns.mainStatus"),
+        cell: (info) => {
+          const code = info.row.original.latest_http_status_code;
+          return (
+            <div className="space-y-1">
+              <DomainStatusBadge dimension="availability" value={info.getValue()} />
+              {code ? (
+                <span className="block text-xs text-muted-foreground">HTTP {code}</span>
+              ) : null}
+            </div>
+          );
+        },
       }),
       columnHelper.accessor("confidence_score", {
         id: "confidence_score",
         header: t("columns.confidence"),
-        cell: (info) => <span className="tabular-nums">{info.getValue()}</span>,
+        cell: (info) => <ConfidenceRing value={info.getValue()} />,
       }),
       columnHelper.accessor("http_status", {
         id: "http_status",
@@ -87,10 +120,24 @@ export function useDomainColumns() {
         header: t("columns.redirect"),
         cell: (info) => <DomainStatusBadge dimension="redirect" value={info.getValue()} />,
       }),
+      columnHelper.accessor("redirect_target_url", {
+        id: "redirect_target_url",
+        header: t("columns.redirectTarget"),
+        cell: (info) => {
+          const value = info.getValue();
+          return value ? (
+            <span className="block max-w-56 truncate text-xs" title={value}>
+              {value}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">—</span>
+          );
+        },
+      }),
       columnHelper.accessor("isp_status", {
         id: "isp_status",
         header: t("columns.isp"),
-        cell: (info) => <DomainStatusBadge dimension="isp" value={info.getValue()} />,
+        cell: (info) => <DomainListIspBadge status={info.getValue()} />,
       }),
       columnHelper.accessor("tls_status", {
         id: "tls_status",

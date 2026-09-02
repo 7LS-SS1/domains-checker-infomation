@@ -12,6 +12,11 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useDomainColumns, SORTABLE_COLUMNS } from "@/lib/domains/columns";
 import { DomainStatusBadge } from "@/components/domains/domain-status-badge";
+import {
+  ConfidenceRing,
+  DomainLifecycleDot,
+  DomainListIspBadge,
+} from "@/components/domains/domain-list-indicators";
 import { DomainRowActions } from "@/components/domains/domain-row-actions";
 import { DateValue } from "@/components/ui/date-value";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -108,7 +113,7 @@ export function DomainsTable({
         role="region"
         aria-label={t("title")}
       >
-        <table className="w-full min-w-[1100px] text-sm">
+        <table className="w-full min-w-[1700px] text-sm">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border bg-surface">
@@ -178,18 +183,35 @@ function DomainCard({ domain }: { domain: Domain }) {
 
   return (
     <li className="rounded-lg border border-border p-3">
-      <Link href={`/domains/${domain.id}`} className="font-medium text-foreground hover:underline">
-        {isIdn ? `${domain.domain_unicode} (${domain.domain_ascii})` : domain.domain_ascii}
-      </Link>
+      <div className="flex items-center gap-2">
+        <DomainLifecycleDot domain={domain} />
+        <Link
+          href={`/domains/${domain.id}`}
+          className="font-medium text-foreground hover:underline"
+        >
+          {isIdn ? `${domain.domain_unicode} (${domain.domain_ascii})` : domain.domain_ascii}
+        </Link>
+      </div>
       <div className="mt-2 flex flex-wrap gap-1.5">
         <DomainStatusBadge dimension="availability" value={domain.availability_status} />
-        <DomainStatusBadge dimension="lifecycle" value={domain.lifecycle_status} />
-        <DomainStatusBadge dimension="isp" value={domain.isp_status} />
+        <DomainListIspBadge status={domain.isp_status} />
+        <ConfidenceRing value={domain.confidence_score} />
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         {t("columns.lastChecked")}:{" "}
         {domain.last_checked_at ? <DateValue value={domain.last_checked_at} /> : t("neverChecked")}
       </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {t("columns.renewalDecision")}: {t(`renewalDecision.${domain.renewal_decision}`)}
+        {domain.renewal_price && domain.renewal_currency
+          ? ` · ${domain.renewal_price} ${domain.renewal_currency}`
+          : ""}
+      </p>
+      {domain.redirect_target_url && (
+        <p className="mt-1 break-all text-xs text-muted-foreground">
+          {t("columns.redirectTarget")}: {domain.redirect_target_url}
+        </p>
+      )}
     </li>
   );
 }

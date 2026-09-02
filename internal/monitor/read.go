@@ -70,13 +70,19 @@ func (s *Service) GetRunDetail(ctx context.Context, runID uuid.UUID) (RunDetail,
 	}
 	detail := RunDetail{Run: run, Results: []Result{}, DNSChecks: []DNSCheck{}, HTTPChecks: []HTTPCheck{}}
 	resultRows, err := s.pool.Query(ctx, `
-		SELECT id, monitoring_run_id, domain_id, vantage_type, vantage_key,
-		       observed_availability::text, dns_status::text, http_status::text, redirect_status::text,
-		       isp_status::text, tls_status::text, content_status::text,
-		       initial_http_status_code, final_http_status_code, final_target_status::text,
-		       failure_stage, error_code, error_message, confidence_score, confidence_level::text,
-		       policy_version, checked_at, completed_at
-		FROM monitoring_results WHERE monitoring_run_id = $1 ORDER BY checked_at, id
+		SELECT result.id, result.monitoring_run_id, result.domain_id, result.vantage_type, result.vantage_key,
+		       node.country_code, node.network_name,
+		       result.observed_availability::text, result.dns_status::text, result.http_status::text, result.redirect_status::text,
+		       result.isp_status::text, result.tls_status::text, result.content_status::text,
+		       result.initial_http_status_code, result.final_http_status_code, result.final_target_status::text,
+		       result.failure_stage, result.error_code, result.error_message, result.confidence_score, result.confidence_level::text,
+		       result.policy_version, result.checked_at, result.completed_at,
+		       COALESCE((SELECT array_agg(reason.reason_code ORDER BY reason.id)
+		                 FROM classification_reasons reason
+		                 WHERE reason.monitoring_result_id = result.id AND reason.dimension = 'isp'), ARRAY[]::text[])
+		FROM monitoring_results result
+		LEFT JOIN probe_nodes node ON node.id = result.probe_node_id
+		WHERE result.monitoring_run_id = $1 ORDER BY result.checked_at, result.id
 	`, runID)
 	if err != nil {
 		return RunDetail{}, fmt.Errorf("query monitoring results: %w", err)
@@ -85,10 +91,11 @@ func (s *Service) GetRunDetail(ctx context.Context, runID uuid.UUID) (RunDetail,
 		var result Result
 		if err := resultRows.Scan(
 			&result.ID, &result.RunID, &result.DomainID, &result.VantageType, &result.VantageKey,
+			&result.VantageCountry, &result.VantageNetwork,
 			&result.Availability, &result.DNS, &result.HTTP, &result.Redirect, &result.ISP, &result.TLS,
 			&result.Content, &result.InitialHTTP, &result.FinalHTTP, &result.FinalTarget, &result.FailureStage,
 			&result.ErrorCode, &result.ErrorMessage, &result.Confidence, &result.ConfidenceLevel,
-			&result.PolicyVersion, &result.CheckedAt, &result.CompletedAt,
+			&result.PolicyVersion, &result.CheckedAt, &result.CompletedAt, &result.ReasonCodes,
 		); err != nil {
 			resultRows.Close()
 			return RunDetail{}, fmt.Errorf("scan monitoring result: %w", err)
