@@ -3,7 +3,11 @@ import { z } from "zod";
 import { callBackend } from "@/lib/api/backend-client";
 import { ApiError, MalformedApiResponseError, parseApiEnvelope } from "@/lib/api/envelope";
 import { jsonApiError, jsonBffError } from "@/lib/api/bff-response";
-import { CSRF_COOKIE_NAME, SESSION_MAX_AGE_FALLBACK_SECONDS } from "@/lib/auth/cookies";
+import {
+  CSRF_COOKIE_NAME,
+  SESSION_MAX_AGE_FALLBACK_SECONDS,
+  shouldUseSecureSessionCookies,
+} from "@/lib/auth/cookies";
 
 export const runtime = "nodejs";
 
@@ -98,7 +102,7 @@ export async function POST(request: NextRequest) {
   // back to /login).
   response.cookies.set(CSRF_COOKIE_NAME, data.csrf_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: shouldUseSecureSessionCookies(),
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_MAX_AGE_FALLBACK_SECONDS,

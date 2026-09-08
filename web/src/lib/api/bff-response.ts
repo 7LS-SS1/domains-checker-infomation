@@ -10,6 +10,10 @@ import type { ApiError, ApiErrorPayload, Locale } from "@/lib/api/envelope";
 const BFF_ERROR_MESSAGES: Record<string, { th: string; en: string }> = {
   INVALID_JSON: { th: "ข้อมูล JSON ไม่ถูกต้อง", en: "The JSON payload is invalid." },
   VALIDATION_FAILED: { th: "ข้อมูลไม่ผ่านการตรวจสอบ", en: "The supplied data is invalid." },
+  CSRF_INVALID: {
+    th: "เซสชันสำหรับส่งข้อมูลหมดอายุ กรุณาเข้าสู่ระบบใหม่แล้วลองอีกครั้ง",
+    en: "The form session has expired. Please sign in again and retry.",
+  },
   UPSTREAM_UNAVAILABLE: {
     th: "ไม่สามารถเชื่อมต่อกับระบบหลังบ้านได้ในขณะนี้",
     en: "Could not reach the backend service right now.",

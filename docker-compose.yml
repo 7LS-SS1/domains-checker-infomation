@@ -7,7 +7,7 @@ x-app-environment: &app-environment
   REDIS_ADDR: redis:6379
   REDIS_DB: 0
   DEFAULT_LOCALE: ${DEFAULT_LOCALE:-th}
-  SESSION_COOKIE_SECURE: "false"
+  SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-false}"
   DB_MAX_CONNECTIONS: ${DB_MAX_CONNECTIONS:-20}
   DB_MIN_CONNECTIONS: ${DB_MIN_CONNECTIONS:-2}
   OUTBOX_STREAM: domain-monitor:jobs
@@ -175,6 +175,9 @@ services:
       # in-network service name so the frontend never talks to the backend
       # over a host-exposed port.
       API_INTERNAL_URL: http://api:8080
+      # Must match the Go session-cookie policy. Use false only for an HTTP
+      # preview domain; set true when Coolify serves the public app via HTTPS.
+      SESSION_COOKIE_SECURE: "${SESSION_COOKIE_SECURE:-false}"
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
