@@ -6,10 +6,10 @@ services:
     command: ["/usr/local/bin/probe"]
     environment:
       PROBE_API_URL: ${PROBE_API_URL:?Set the public HTTPS platform API URL}
-      PROBE_NAME: ${PROBE_NAME:-sg-primary}
-      PROBE_REGION_CODE: SG
-      PROBE_COUNTRY_CODE: SG
-      PROBE_NETWORK_NAME: ${PROBE_NETWORK_NAME:-sg-egress}
+      PROBE_NAME: ${PROBE_NAME:-th-3bb-01}
+      PROBE_REGION_CODE: ${PROBE_REGION_CODE:-TH}
+      PROBE_COUNTRY_CODE: ${PROBE_COUNTRY_CODE:-TH}
+      PROBE_NETWORK_NAME: ${PROBE_NETWORK_NAME:-3BB}
       PROBE_AGENT_VERSION: ${PROBE_AGENT_VERSION:-phase4}
       PROBE_STATE_DIR: /var/lib/domain-monitor-probe
       PROBE_REGISTRATION_TOKEN_FILE: /run/secrets/probe_registration_token
@@ -23,6 +23,10 @@ services:
     cap_drop: ["ALL"]
     security_opt:
       - no-new-privileges:true
+    # The shared runtime image healthcheck targets the API's port 8080.
+    # Probe agents are outbound-only and do not expose an HTTP health port.
+    healthcheck:
+      disable: true
     restart: unless-stopped
 
 secrets:

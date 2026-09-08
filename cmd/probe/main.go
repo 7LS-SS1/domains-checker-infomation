@@ -207,7 +207,7 @@ func (a *agent) run(ctx context.Context) error {
 			continue
 		}
 		if err := a.execute(ctx, *job); err != nil {
-			a.logger.Error("probe_job_failed", "job_id", job.JobID, "error", err)
+			a.logger.Error("probe_job_failed", "job_id", job.JobID, "run_id", job.RunID, "domain", job.Target.DomainASCII, "error", err)
 		} else {
 			a.logger.Info("probe_job_completed", "job_id", job.JobID, "run_id", job.RunID, "domain", job.Target.DomainASCII)
 		}
@@ -317,7 +317,7 @@ func validateJob(job probeprotocol.Job) error {
 }
 
 func validCanonicalDomain(value string) bool {
-	if value == "" || value != strings.ToLower(value) || strings.ContainsAny(value, "/:@ \\t\\r\\n") || net.ParseIP(value) != nil {
+	if value == "" || value != strings.ToLower(value) || strings.ContainsAny(value, "/:@ \t\r\n") || net.ParseIP(value) != nil {
 		return false
 	}
 	ascii, err := idna.Lookup.ToASCII(value)
