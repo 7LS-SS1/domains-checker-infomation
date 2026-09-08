@@ -45,17 +45,25 @@ export interface CreateOverrideInput {
   expires_at?: string | null;
 }
 
+export function buildCreateOverrideBody({
+  domainId: _domainId,
+  ...body
+}: CreateOverrideInput): string {
+  // The outer JSON.stringify already encodes override_value as a JSON string.
+  // Encoding it once more would send a string containing literal quote
+  // characters (for example, "\"2027-10-10\"") and every field-specific
+  // validator in the Go API would reject the value.
+  return JSON.stringify(body);
+}
+
 export function useCreateOverride() {
   const locale = useLocale();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ domainId, override_value, ...body }: CreateOverrideInput) =>
-      bffFetch(`/api/bff/domains/${domainId}/overrides`, overrideRecordSchema, {
+    mutationFn: (input: CreateOverrideInput) =>
+      bffFetch(`/api/bff/domains/${input.domainId}/overrides`, overrideRecordSchema, {
         method: "POST",
-        // override_value must be a JSON string per the backend contract
-        // (openapi.yaml ManualOverrideInput) — the field itself carries a
-        // JSON-encoded string value, not a bare string.
-        body: JSON.stringify({ ...body, override_value: JSON.stringify(override_value) }),
+        body: buildCreateOverrideBody(input),
         locale,
       }),
     onSuccess: (_data, variables) => {
